@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SalaryOS — Your personal financial operating system. Track income, allocate savings, manage clients, and grow your wealth.">
+<meta name="theme-color" content="#00D5E6">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23020916'/><rect x='22' y='22' width='56' height='11' rx='5.5' fill='%2300D5E6'/><rect x='22' y='40' width='56' height='11' rx='5.5' fill='%2300D5E6' opacity='.7'/><rect x='22' y='58' width='56' height='11' rx='5.5' fill='%2300D5E6' opacity='.4'/><rect x='22' y='76' width='36' height='11' rx='5.5' fill='%2300D5E6' opacity='.2'/></svg>">
 <title>SalaryOS</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
@@ -2321,7 +2324,7 @@ const DEFAULT_VAULTS=[
 
 // ─── STATE ───
 function load(){try{return JSON.parse(localStorage.getItem('sos4')||'null');}catch{return null;}}
-function save(){try{localStorage.setItem('sos4',JSON.stringify(S));}catch{}}
+// save() is defined below with Supabase sync support
 function freshYear(){return{sal:new Array(12).fill(null),notes:new Array(12).fill(''),vaults:JSON.parse(JSON.stringify(DEFAULT_VAULTS)),exp:{},expLog:[],goals:[],budget:{},assets:[],liabs:[],allocMode:'full'};}
 let S=load()||{years:[2026],active:2026,theme:'dark',data:{}};
 if(!S.data[S.active])S.data[S.active]=freshYear();
@@ -2352,7 +2355,7 @@ function updateCurrencySymbols(){
   // Also update any zero-value placeholders like ₱0.00 in static elements
   ['sb-total','nw-assets','nw-liab','nw-total','cm-dp-amt','cm-bal-amt','em-dp-amt','em-bal-amt'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el&&(el.textContent==='₱0.00'||el.textContent.startsWith('₱')))el.textContent=sym+'0.00';
+    if(el&&el.textContent)el.textContent=sym+'0.00';
   });
   // Update exp-log-pre force (it has no special color)
   const expPre=document.getElementById('exp-log-pre-static');
@@ -2661,7 +2664,7 @@ function compute(){
   // SALARY KPIs
   el('k-total').textContent=fz(total);el('k-total-s').textContent=count+' month'+(count!==1?'s':'')+' logged';
   el('k-avg').textContent=fz(avg);el('k-avg-s').textContent=count>0?'across '+count+' months':'no data yet';
-  el('k-best').textContent=best?fz(best.v):'₱0.00';el('k-best-s').textContent=best?MONTHS[best.i]+' '+S.active:'—';
+  el('k-best').textContent=best?fz(best.v):getCurrency().sym+'0.00';el('k-best-s').textContent=best?MONTHS[best.i]+' '+S.active:'—';
   el('k-alloc').textContent=fz(total);setMom('k-mom','k-mom-s',momV);
   el('st-best').textContent=best?MONTHS[best.i]:'—';el('st-count').textContent=count+' / 12';
   if(el('st-v2-lbl'))el('st-v2-lbl').textContent=vaults[1]?vaults[1].name:'Vault 2';
@@ -2742,11 +2745,11 @@ function drawBar(id,sal,H){
   const acts=vals.map((v,i)=>({v,i})).filter(x=>x.v>0);const lastI=acts.length>0?acts[acts.length-1].i:-1;
   const isDark=S.theme==='dark';const gc=isDark?'rgba(30,47,71,.5)':'rgba(150,180,210,.35)';const mc=isDark?'#566a82':'#6080a0';
   ctx.strokeStyle=gc;ctx.lineWidth=.5;
-  for(let g=0;g<=4;g++){const y=P.t+cH-(g/4)*cH;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.l+cW,y);ctx.stroke();ctx.fillStyle=mc;ctx.font='500 8px Montserrat,sans-serif';ctx.textAlign='right';ctx.fillText('₱'+((g/4*ceil)/1000).toFixed(0)+'k',P.l-5,y+3.5);}
+  for(let g=0;g<=4;g++){const y=P.t+cH-(g/4)*cH;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.l+cW,y);ctx.stroke();ctx.fillStyle=mc;ctx.font='500 8px Montserrat,sans-serif';ctx.textAlign='right';ctx.fillText(getCurrency().sym+((g/4*ceil)/1000).toFixed(0)+'k',P.l-5,y+3.5);}
   const bW=Math.max(Math.floor(cW/12)-5,4);const gap=(cW-bW*12)/12;
   MONTHS.forEach((m,i)=>{const v=vals[i],x=P.l+i*(bW+gap)+gap/2;const bH=v>0?Math.max((v/ceil)*cH,3):0;const y=P.t+cH-bH;const isL=i===lastI;
     ctx.fillStyle=isDark?'rgba(30,47,71,.3)':'rgba(150,180,210,.2)';rr(ctx,x,P.t,bW,cH,4);ctx.fill();
-    if(v>0){ctx.fillStyle=isL?'rgba(0,213,230,.85)':'rgba(123,189,232,.32)';rr(ctx,x,y,bW,bH,4);ctx.fill();if(isL){const grd=ctx.createLinearGradient(0,y,0,y+Math.min(bH,24));grd.addColorStop(0,'rgba(0,213,230,.25)');grd.addColorStop(1,'rgba(0,213,230,0)');ctx.fillStyle=grd;rr(ctx,x,y,bW,Math.min(bH,24),4);ctx.fill();}ctx.fillStyle=isL?'#00D5E6':'rgba(123,189,232,.55)';ctx.font=(isL?'700':'500')+' 7.5px Montserrat,sans-serif';ctx.textAlign='center';ctx.fillText('₱'+(v/1000).toFixed(1)+'k',x+bW/2,y-4);}
+    if(v>0){ctx.fillStyle=isL?'rgba(0,213,230,.85)':'rgba(123,189,232,.32)';rr(ctx,x,y,bW,bH,4);ctx.fill();if(isL){const grd=ctx.createLinearGradient(0,y,0,y+Math.min(bH,24));grd.addColorStop(0,'rgba(0,213,230,.25)');grd.addColorStop(1,'rgba(0,213,230,0)');ctx.fillStyle=grd;rr(ctx,x,y,bW,Math.min(bH,24),4);ctx.fill();}ctx.fillStyle=isL?'#00D5E6':'rgba(123,189,232,.55)';ctx.font=(isL?'700':'500')+' 7.5px Montserrat,sans-serif';ctx.textAlign='center';ctx.fillText(getCurrency().sym+(v/1000).toFixed(1)+'k',x+bW/2,y-4);}
     ctx.fillStyle=isL?mc:isDark?'#3d5470':'#8099b5';ctx.font=(isL?'600':'500')+' 7.5px Montserrat,sans-serif';ctx.textAlign='center';ctx.fillText(m,x+bW/2,H-7);
   });
 }
@@ -3024,7 +3027,7 @@ function drawCompareBar(){
     const maxV=id==='compareBar'?Math.max(...sal.map(v=>v||0),avgExp,1):Math.max(...sal.map((v,i)=>Math.abs((v||0)-avgExp)),1);
     const ceil=Math.ceil(maxV/10000)*10000||100000;
     ctx.strokeStyle=gc;ctx.lineWidth=.5;
-    for(let g=0;g<=4;g++){const y=P.t+cH-(g/4)*cH;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.l+cW,y);ctx.stroke();ctx.fillStyle=mc;ctx.font='500 8px Montserrat,sans-serif';ctx.textAlign='right';ctx.fillText('₱'+((g/4*ceil)/1000).toFixed(0)+'k',P.l-5,y+3.5);}
+    for(let g=0;g<=4;g++){const y=P.t+cH-(g/4)*cH;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.l+cW,y);ctx.stroke();ctx.fillStyle=mc;ctx.font='500 8px Montserrat,sans-serif';ctx.textAlign='right';ctx.fillText(getCurrency().sym+((g/4*ceil)/1000).toFixed(0)+'k',P.l-5,y+3.5);}
     if(id==='compareBar'){
       const pairW=Math.max(Math.floor(cW/12)-6,8);const gap=(cW-pairW*2*12)/12;
       MONTHS.forEach((m,i)=>{
