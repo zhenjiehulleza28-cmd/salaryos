@@ -4899,10 +4899,18 @@ setTimeout(function(){
   renderNotifPanel();
   setTimeout(function(){
     if(typeof Notification !== 'undefined' && Notification.permission === 'default'){
-      requestPushPermission();
+      if(typeof requestPushPermission === 'function') requestPushPermission();
     }
   }, 2000);
 }, 800);
+// realtimeTick — periodic sync check
+function realtimeTick(){
+  if(_supabase && _supabaseUser){
+    loadFromSupabase().catch(()=>{});
+  }
+  updateLiveClock();
+  checkAndNotify(false);
+}
 setInterval(realtimeTick, 30000);
 updateLiveClock();
 window.addEventListener('resize',compute);
