@@ -2065,8 +2065,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     </div>
 
     <!-- Client list panel -->
-    <div class="panel" style="margin-bottom:14px;">
-      <!-- Filter + Count bar -->
+    <div class="panel">
+      <!-- Filter + Count + Send All bar -->
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <div class="cst-filters" id="cst-filter-tabs">
           <div class="cst-ftab active" data-f="all"     onclick="filterSingil('all',this)">All</div>
@@ -2075,7 +2075,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <div class="cst-ftab"       data-f="paid"     onclick="filterSingil('paid',this)">Fully Paid</div>
           <div class="cst-ftab"       data-f="overdue"  onclick="filterSingil('overdue',this)">Overdue</div>
         </div>
-        <span style="font-size:12px;font-weight:700;color:var(--muted);" id="cst-count">0 clients</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button onclick="sendAllReminders()" style="display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1px solid rgba(0,213,230,.3);background:rgba(0,213,230,.08);color:#00D5E6;font-size:12px;font-weight:700;cursor:pointer;transition:.18s;font-family:'Montserrat',sans-serif;" onmouseover="this.style.background='rgba(0,213,230,.16)'" onmouseout="this.style.background='rgba(0,213,230,.08)'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send All Reminders
+          </button>
+          <span style="font-size:12px;font-weight:700;color:var(--muted);" id="cst-count">0 clients</span>
+        </div>
       </div>
 
       <!-- Table header -->
@@ -2095,15 +2101,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         add client
       </div>
-    </div>
-
-    <!-- Upcoming Singil -->
-    <div class="panel">
-      <div class="ph">
-        <div class="ph-left"><div class="ph-bar" style="background:var(--amber);"></div><span class="ph-lbl">Upcoming Singil</span></div>
-        <span class="ph-chip" style="background:rgba(251,146,60,.1);color:var(--amber);">next 30 days</span>
-      </div>
-      <div id="cst-urgent-list"></div>
     </div>
 
   </div>
@@ -3086,6 +3083,13 @@ function exportPDF(){
   const sym=getCurrency().sym;
   const today=new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
 
+  // PDF-safe currency formatter — jsPDF Helvetica can't render ₱, ₩, etc.
+  // Map special symbols to ASCII equivalents for PDF
+  const PDF_SYM_MAP={'₱':'PHP ','₩':'KRW ','€':'EUR ','£':'GBP ','¥':'JPY ','S$':'SGD ','A$':'AUD ','C$':'CAD ','د.إ':'AED '};
+  const pdfSym = PDF_SYM_MAP[sym] || sym;
+  const pfz = n => pdfSym + (n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const pfmt = n => (n==null||isNaN(n)) ? '--' : pdfSym+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
   try{
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
@@ -3176,10 +3180,10 @@ function exportPDF(){
     sectionHeader('Financial Summary',C.cyan);
 
     const kW=(cW-18)/4;
-    kpiCard('Total Income',fz(total),C.cyan,ml,y,kW);
-    kpiCard('Monthly Average',fz(avg),C.blue,ml+kW+6,y,kW);
-    kpiCard('Total Expenses',fz(totalExp),C.red,ml+(kW+6)*2,y,kW);
-    kpiCard('Net Savings',fz(netSavings),netSavings>=0?C.green:C.red,ml+(kW+6)*3,y,kW);
+    kpiCard('Total Income',pfz(total),C.cyan,ml,y,kW);
+    kpiCard('Monthly Average',pfz(avg),C.blue,ml+kW+6,y,kW);
+    kpiCard('Total Expenses',pfz(totalExp),C.red,ml+(kW+6)*2,y,kW);
+    kpiCard('Net Savings',pfz(netSavings),netSavings>=0?C.green:C.red,ml+(kW+6)*3,y,kW);
     y+=62;
 
     const kW2=(cW-18)/4;
@@ -3205,8 +3209,8 @@ function exportPDF(){
       const cells=[
         {text:String(i+1)},
         {text:m+' '+S.active},
-        {text:s?fz(s):'—',align:'right'},
-        {text:diff!==null?(diff>=0?'+':'')+fz(diff):'—',align:'right'},
+        {text:s?pfz(s):'—',align:'right'},
+        {text:diff!==null?(diff>=0?'+':'')+pfz(diff):'—',align:'right'},
         {text:momP!==null?(momP>=0?'+':'')+momP.toFixed(1)+'%':'—',align:'right'},
         {text:momP!==null?(momP>0?'↑ Up':momP<0?'↓ Down':'→ Flat'):'—'}
       ];
@@ -3226,7 +3230,7 @@ function exportPDF(){
     tc(C.muted);doc.setFont('helvetica','normal');doc.setFontSize(7);
     doc.text('YEARLY TOTAL',ml+5,y+12);
     tc(C.cyan);doc.setFont('helvetica','bold');doc.setFontSize(9);
-    doc.text(fz(total),ml+25+70+110-5,y+13,'right');
+    doc.text(pfz(total),ml+25+70+110-5,y+13,'right');
     y+=28;
 
     // ══════════════════════════════════════
@@ -3263,10 +3267,10 @@ function exportPDF(){
       fc(C.border);doc.rect(ml+160+30,y+7,barMaxW,4,'F');
       try{const rgb=v.color.startsWith('#')?[parseInt(v.color.slice(1,3),16),parseInt(v.color.slice(3,5),16),parseInt(v.color.slice(5,7),16)]:C.cyan;fc(rgb);doc.rect(ml+160+30,y+7,barMaxW*barPct,4,'F');}catch{}
       tc(C.blue);doc.setFont('helvetica','normal');doc.setFontSize(8.5);
-      doc.text(fz(calc),ml+160+80+110-5,y+12,'right');
-      tc(C.text);doc.text(fz(actual),ml+160+80+110+110-5,y+12,'right');
+      doc.text(pfz(calc),ml+160+80+110-5,y+12,'right');
+      tc(C.text);doc.text(pfz(actual),ml+160+80+110+110-5,y+12,'right');
       tc(diff2>=0?C.green:C.red);
-      doc.text((diff2>=0?'+':'')+fz(diff2),ml+cW-5,y+12,'right');
+      doc.text((diff2>=0?'+':'')+pfz(diff2),ml+cW-5,y+12,'right');
       dc(C.border);doc.setLineWidth(0.3);doc.line(ml,y+18,ml+cW,y+18);
       y+=18;
     });
@@ -3293,7 +3297,7 @@ function exportPDF(){
         doc.text(cat.name,ml+5,y+12);
         const eRgb=expColors[i]?[parseInt(expColors[i].slice(1,3),16),parseInt(expColors[i].slice(3,5),16),parseInt(expColors[i].slice(5,7),16)]:C.amber;
         tc(eRgb);doc.setFont('helvetica','bold');
-        doc.text(fz(val),ml+140+100-5,y+12,'right');
+        doc.text(pfz(val),ml+140+100-5,y+12,'right');
         tc(C.muted);doc.setFont('helvetica','normal');doc.setFontSize(8);
         doc.text(pct2.toFixed(1)+'%',ml+140+100+80-5,y+12,'right');
         // bar
@@ -3309,7 +3313,7 @@ function exportPDF(){
       tc(C.muted);doc.setFont('helvetica','normal');doc.setFontSize(7);
       doc.text('TOTAL EXPENSES',ml+5,y+12);
       tc(C.red);doc.setFont('helvetica','bold');doc.setFontSize(9);
-      doc.text(fz(totalExp),ml+140+100-5,y+13,'right');
+      doc.text(pfz(totalExp),ml+140+100-5,y+13,'right');
       y+=28;
     }
 
@@ -3325,8 +3329,8 @@ function exportPDF(){
       const totalDone=clients.filter(c=>c.done).reduce((a,c)=>a+c.amt,0);
       const cKW=(cW-12)/3;
       kpiCard('Total Clients',clients.length+' clients',C.cyan,ml,y,cKW,40);
-      kpiCard('Total Billed',fz(totalBilled),C.blue,ml+cKW+6,y,cKW,40);
-      kpiCard('Fully Collected',fz(totalDone),C.green,ml+(cKW+6)*2,y,cKW,40);
+      kpiCard('Total Billed',pfz(totalBilled),C.blue,ml+cKW+6,y,cKW,40);
+      kpiCard('Fully Collected',pfz(totalDone),C.green,ml+(cKW+6)*2,y,cKW,40);
       y+=54;
 
       const cCols=[{text:'Client'},{text:'Project'},{text:'Contract',align:'right'},{text:'DP %'},{text:'Status'}];
@@ -3341,7 +3345,7 @@ function exportPDF(){
         tc(C.muted);doc.setFont('helvetica','normal');doc.setFontSize(8);
         doc.text((c.project||'—').substring(0,20),ml+130+5,y+11);
         tc(C.blue);doc.setFont('helvetica','bold');
-        doc.text(fz(c.amt),ml+130+120+100-5,y+11,'right');
+        doc.text(pfz(c.amt),ml+130+120+100-5,y+11,'right');
         tc(C.muted);doc.setFont('helvetica','normal');
         doc.text((c.dpPct||60)+'%',ml+130+120+100+8,y+11);
         const statusClr=c.done?C.green:C.amber;
@@ -4095,7 +4099,7 @@ function updateClientPreview(){
     return;
   }
   const sym = getCurrency().sym;
-  const dpPct = Math.min(99, Math.max(1, parseFloat(document.getElementById('cm-dp-pct')?.value||60)||60));
+  const dpPct = Math.min(100, Math.max(0, parseFloat(document.getElementById('cm-dp-pct')?.value||60)||60));
   const balPct = 100 - dpPct;
   const dpAmt = amt * (dpPct/100);
   const balAmt = amt * (balPct/100);
@@ -4103,13 +4107,16 @@ function updateClientPreview(){
   const balDisp = document.getElementById('cm-bal-pct-display');
   if(balDisp) balDisp.textContent = balPct + '%';
   const dpLbl = document.getElementById('cm-dp-lbl');
-  if(dpLbl) dpLbl.textContent = 'Downpayment (' + dpPct + '%)';
+  if(dpLbl) dpLbl.textContent = dpPct===100 ? 'Full Payment (100%)' : 'Downpayment (' + dpPct + '%)';
   const balLbl = document.getElementById('cm-bal-lbl');
   if(balLbl) balLbl.textContent = 'Balance (' + balPct + '%)';
+  // Show/hide balance preview card based on % 
+  const balCard = document.querySelector('.cst-sp-bal');
+  if(balCard) balCard.style.display = balPct===0 ? 'none' : '';
   document.getElementById('cm-dp-amt').textContent  = sym + dpAmt.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('cm-bal-amt').textContent = sym + balAmt.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('cm-dp-date').textContent  = fmtDate(parsed.dpDate);
-  document.getElementById('cm-bal-date').textContent = fmtDate(parsed.balDate);
+  document.getElementById('cm-bal-date').textContent = balPct===0 ? 'N/A' : fmtDate(parsed.balDate);
   prev.style.display='grid';
   if(hint){
     const dpD = daysBetween(parsed.dpDate);
@@ -4140,7 +4147,7 @@ function updateEditPreview(){
   if(!prev) return;
   if(!parsed || amt <= 0){ prev.style.display='none'; return; }
   const sym = getCurrency().sym;
-  const dpPct = Math.min(99, Math.max(1, parseFloat(document.getElementById('em-dp-pct')?.value||60)||60));
+  const dpPct = Math.min(100, Math.max(0, parseFloat(document.getElementById('em-dp-pct')?.value||60)||60));
   const balPct = 100 - dpPct;
   const dpAmt = amt * (dpPct/100);
   const balAmt = amt * (balPct/100);
@@ -4200,7 +4207,7 @@ function confirmAddClient(){
     billing,       // store the original "11/26" string
     dpDate:parsed.dpDate, balDate:parsed.balDate,
     dpDay:parsed.dpDay, balDay:parsed.balDay,
-    dpPct: Math.min(99,Math.max(1,parseFloat(document.getElementById('cm-dp-pct')?.value||60)||60)),
+    dpPct: Math.min(100,Math.max(0,parseFloat(document.getElementById('cm-dp-pct')?.value||60)||60)),
     year:S.active
   });
   save();
@@ -4223,6 +4230,147 @@ function toggleSingilDone(id){
   c.done = !c.done;
   save(); renderSingilList(); computeSingilKPIs();
   showToast(c.done ? '✅ Marked as fully paid!' : '↩ Marked as unpaid', c.done?'ok':'warn');
+}
+
+function buildReminderEmail(c){
+  const sym = getCurrency().sym;
+  const dpPct = c.dpPct||60;
+  const balPct = 100-dpPct;
+  const dpAmt = c.amt*(dpPct/100);
+  const balAmt = c.amt*(balPct/100);
+  const st = getAutoStatus(c);
+  const isDP = st==='pending_dp';
+  const payType = isDP ? 'Downpayment ('+dpPct+'%)' : 'Balance ('+balPct+'%)';
+  const payAmt = isDP ? dpAmt : balAmt;
+  const dueDate = isDP ? fmtDate(c.dpDate) : fmtDate(c.balDate);
+
+  const subject = 'Payment Reminder — '+c.project+' | Due Tomorrow, '+dueDate;
+  const body =
+'Hi '+c.name+',\n\n'+
+'Hope you\'re doing well! Just a friendly reminder that your payment is due tomorrow, '+dueDate+'.\n\n'+
+'Payment Details\n'+
+payType+' — '+sym+payAmt.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})+'\n\n'+
+'---\n\n'+
+'Payment Methods\n\n'+
+'CIMB Bank\n'+
+'20867601790853 — Reodel Basalan\n\n'+
+'Union Bank\n'+
+'109486556000 — Reodel Basalan\n\n'+
+'GoTyme Bank\n'+
+'015063762135 — Reodel Basalan\n\n'+
+'GCash\n'+
+'09104884204 — Reodel B.\n\n'+
+'Union Digital\n'+
+'0020 3142 5724 — Reodel Basalan\n\n'+
+'---\n\n'+
+'Please send a screenshot of your payment confirmation once done.\n\n'+
+'Thank you! 😊';
+
+  return {subject, body, to: c.email};
+}
+
+function markReminderSent(c){
+  if(!S.reminderSent) S.reminderSent = {};
+  const sentKey = 'reminder_sent_'+c.id+'_'+c.dpDate+'_'+c.balDate;
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'})+' '+now.toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+  S.reminderSent[sentKey] = timeStr;
+  save();
+}
+
+async function sendSingleReminder(id){
+  ensureClients();
+  const c = S.clients.find(x=>x.id===id);
+  if(!c){ showToast('Client not found','err'); return; }
+  if(!c.email){ showToast('No email set for this client','warn'); return; }
+
+  const {subject, body, to} = buildReminderEmail(c);
+  showToast('📨 Opening email draft for '+c.name+'...','ok');
+
+  // Open Gmail compose
+  const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'+
+    '&to='+encodeURIComponent(to)+
+    '&su='+encodeURIComponent(subject)+
+    '&body='+encodeURIComponent(body);
+  window.open(gmailUrl, '_blank');
+
+  markReminderSent(c);
+  renderSingilList();
+}
+
+async function sendAllReminders(){
+  ensureClients();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate()+1);
+  const tMonth = String(tomorrow.getMonth()+1).padStart(2,'0');
+  const tDay = String(tomorrow.getDate()).padStart(2,'0');
+
+  const due = S.clients.filter(c=>{
+    if(c.done || !c.email) return false;
+    if(c.year && c.year!==S.active) return false;
+    const st = getAutoStatus(c);
+    const checkDate = st==='pending_dp' ? c.dpDate : c.balDate;
+    if(!checkDate) return false;
+    // dpDate/balDate stored as YYYY-MM-DD
+    const parts = checkDate.split('-');
+    if(parts.length<3) return false;
+    const m = parts[1]; // month already zero-padded
+    const d = parts[2]; // day already zero-padded
+    return m===tMonth && d===tDay;
+  });
+
+  // Show confirmation modal (show even if empty for UX feedback)
+  const list = document.getElementById('reminder-list');
+  list.innerHTML = '';
+
+  if(!due.length){
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">No clients with email are due tomorrow.<br><span style="font-size:11px;opacity:.7;">Make sure clients have an email set and a billing date due tomorrow.</span></div>';
+    window._pendingReminders = [];
+    document.getElementById('send-reminders-btn').style.display = 'none';
+  } else {
+    document.getElementById('send-reminders-btn').style.display = 'flex';
+    due.forEach(c=>{
+    const st = getAutoStatus(c);
+    const isDP = st==='pending_dp';
+    const dpPct = c.dpPct||60;
+    const balPct = 100-dpPct;
+    const amt = isDP ? c.amt*(dpPct/100) : c.amt*(balPct/100);
+    const type = isDP ? 'Downpayment' : 'Balance';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;';
+    row.innerHTML =
+      '<div>'+
+        '<div style="font-size:13px;font-weight:700;color:var(--text);">'+c.name+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+c.project+' · '+c.email+'</div>'+
+      '</div>'+
+      '<div style="text-align:right;">'+
+        '<div style="font-size:12px;font-weight:700;color:#00D5E6;">'+fz(amt)+'</div>'+
+        '<div style="font-size:10px;color:var(--muted);margin-top:2px;">'+type+'</div>'+
+      '</div>';
+    list.appendChild(row);
+  });
+    window._pendingReminders = due;
+  }
+  document.getElementById('send-reminders-modal').classList.add('open');
+}
+
+function confirmSendReminders(){
+  const due = window._pendingReminders || [];
+  document.getElementById('send-reminders-modal').classList.remove('open');
+  if(!due.length){ showToast('No reminders to send','warn'); return; }
+  showToast('📨 Opening '+due.length+' reminder draft'+(due.length>1?'s':'')+'...','ok');
+  due.forEach((c,i)=>{
+    setTimeout(()=>{
+      const {subject, body, to} = buildReminderEmail(c);
+      const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1'+
+        '&to='+encodeURIComponent(to)+
+        '&su='+encodeURIComponent(subject)+
+        '&body='+encodeURIComponent(body);
+      window.open(gmailUrl, '_blank');
+      markReminderSent(c);
+    }, i*800);
+  });
+  setTimeout(()=>renderSingilList(), due.length*800+200);
 }
 
 function filterSingil(filter, el){
@@ -4278,7 +4426,7 @@ function renderSingilList(){
 
   if(!clients.length){
     listEl.innerHTML='<div class="cst-empty-state"><div class="cst-empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>No clients yet — click "+ add client" below</div>';
-    renderSingilUrgent(); return;
+    return;
   }
 
   listEl.innerHTML='';
@@ -4334,34 +4482,48 @@ function renderSingilList(){
 
     const card = document.createElement('div');
     card.className='cst-card'+(isDone?' cst-card-done':'');
+    const sentKey = 'reminder_sent_'+c.id+'_'+c.dpDate+'_'+c.balDate;
+    const sentInfo = S.reminderSent && S.reminderSent[sentKey];
+    const sentHtml = sentInfo
+      ? '<div style="font-size:10px;color:#34D399;font-weight:600;margin-top:4px;">✅ Sent '+sentInfo+'</div>'
+      : '<div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:4px;">⏳ Not sent</div>';
+
     card.innerHTML=
       // Col 1: Client info + phase badge
       '<div>'+
         '<div class="cst-card-name">'+c.name+'</div>'+
         '<div class="cst-card-proj">'+c.project+'</div>'+
-        '<div style="margin-top:8px;display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:10.5px;font-weight:700;background:'+pb.bg+';color:'+pb.color+';">'+pb.txt+'</div>'+
+        '<div style="margin-top:8px;display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:10.5px;font-weight:600;background:'+pb.bg+';color:'+pb.color+';">'+pb.txt+'</div>'+
       '</div>'+
-      // Col 2: Total salary
-      '<div class="cst-card-salary" style="'+(isDone?'opacity:.5;text-decoration:line-through;':'')+'">'+fz(c.amt)+'</div>'+
+      // Col 2: Total contract
+      '<div class="cst-card-salary" style="font-weight:700;'+(isDone?'opacity:.5;text-decoration:line-through;':'')+'">'+fz(c.amt)+'</div>'+
       // Col 3: DP
       '<div class="cst-split cst-split-dp" style="'+(st!=='pending_dp'||isDone?'opacity:.45;':'')+'">'+
-        '<div class="cst-split-pct">'+dpPct+'%</div>'+
+        '<div class="cst-split-pct" style="font-weight:700;">'+dpPct+'%</div>'+
         '<div class="cst-split-bar" style="width:'+Math.min(dpPct,100)+'%;"></div>'+
-        '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+fz(dpAmt)+'</div>'+
-        '<div style="font-size:10.5px;color:#a78bfa;margin-top:3px;font-weight:600;">'+fmtDate(c.dpDate)+(st!=='pending_dp'||isDone?' ✓':'')+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:3px;font-weight:400;">'+fz(dpAmt)+'</div>'+
+        '<div style="font-size:10.5px;color:#a78bfa;margin-top:3px;font-weight:500;">'+fmtDate(c.dpDate)+(st!=='pending_dp'||isDone?' ✓':'')+'</div>'+
       '</div>'+
       // Col 4: Balance
       '<div class="cst-split cst-split-bal" style="'+(st==='bal_due'||st==='dp_due'||isDone?'':'opacity:.45;')+'">'+
-        '<div class="cst-split-pct">'+balPct+'%</div>'+
+        '<div class="cst-split-pct" style="font-weight:700;">'+balPct+'%</div>'+
         '<div class="cst-split-bar" style="width:'+Math.min(balPct,100)+'%;"></div>'+
-        '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+fz(balAmt)+'</div>'+
-        '<div style="font-size:10.5px;color:#34D399;margin-top:3px;font-weight:600;">'+fmtDate(c.balDate)+(isDone?' ✓':'')+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:3px;font-weight:400;">'+fz(balAmt)+'</div>'+
+        '<div style="font-size:10.5px;color:#34D399;margin-top:3px;font-weight:500;">'+fmtDate(c.balDate)+(isDone?' ✓':'')+'</div>'+
       '</div>'+
-      // Col 5: Days left + actions
+      // Col 5: Days left + send reminder + actions
       '<div style="display:flex;align-items:flex-start;gap:10px;justify-content:space-between;">'+
-        '<div class="'+daysInfo.cls+'">'+
-          '<div class="cst-days-val">'+daysInfo.val+(typeof daysInfo.val==='number'?'':'')+'</div>'+
-          '<div class="cst-days-sub">'+nextLabel+warnHtml+'</div>'+
+        '<div>'+
+          '<div class="'+daysInfo.cls+'">'+
+            '<div class="cst-days-val" style="font-weight:800;">'+daysInfo.val+'</div>'+
+            '<div class="cst-days-sub" style="font-weight:400;">'+nextLabel+warnHtml+'</div>'+
+          '</div>'+
+          (c.email ? sentHtml : '<div style="font-size:10px;color:var(--muted);margin-top:4px;">No email set</div>')+
+          (c.email && !isDone ?
+            '<button onclick="sendSingleReminder('+c.id+')" style="margin-top:8px;display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;border:1px solid rgba(0,213,230,.25);background:rgba(0,213,230,.07);color:#00D5E6;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;font-family:\'Montserrat\',sans-serif;" onmouseover="this.style.background=\'rgba(0,213,230,.15)\'" onmouseout="this.style.background=\'rgba(0,213,230,.07)\'">'+
+              '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'+
+              'Send Reminder'+
+            '</button>' : '')+
         '</div>'+
         '<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;align-items:flex-end;">'+
           '<button class="cst-done-btn'+(isDone?' active':'')+'" onclick="toggleSingilDone('+c.id+')" title="'+(isDone?'Mark as unpaid':'Mark as fully paid')+'">'+
@@ -4377,7 +4539,6 @@ function renderSingilList(){
       '</div>';
     listEl.appendChild(card);
   });
-  renderSingilUrgent();
 }
 
 function renderSingilUrgent(){
@@ -4467,6 +4628,7 @@ function openEditClientModal(id){
   document.getElementById('em-id').value=id;
   document.getElementById('em-name').value=c.name;
   document.getElementById('em-project').value=c.project;
+  const emEmail=document.getElementById('em-email');if(emEmail)emEmail.value=c.email||'';
   document.getElementById('em-amount').value=c.amt.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
   // Restore billing string or reconstruct from dpDay/balDay
   const billing=c.billing||(c.dpDay&&c.balDay?String(c.dpDay).padStart(2,'0')+'/'+String(c.balDay).padStart(2,'0'):'');
@@ -4494,6 +4656,7 @@ function confirmEditClient(){
   const c       = S.clients.find(x=>x.id===id);
   if(!c){ closeEditClientModal(); return; }
   const name    = document.getElementById('em-name').value.trim();
+  const email   = document.getElementById('em-email')?.value.trim()||'';
   const project = document.getElementById('em-project').value.trim()||'—';
   const amt     = parseFloat((document.getElementById('em-amount').value||'').replace(/,/g,''))||0;
   const billing = document.getElementById('em-billing').value.trim();
@@ -4506,7 +4669,8 @@ function confirmEditClient(){
   c.billing=billing;
   c.dpDate=parsed.dpDate; c.balDate=parsed.balDate;
   c.dpDay=parsed.dpDay; c.balDay=parsed.balDay;
-  c.dpPct=Math.min(99,Math.max(1,parseFloat(document.getElementById('em-dp-pct')?.value||60)||60));
+  c.dpPct=Math.min(100,Math.max(0,parseFloat(document.getElementById('em-dp-pct')?.value||60)||60));
+  c.email=email;
   save();
   closeEditClientModal();
   renderSingilList(); computeSingilKPIs(); checkAndNotify(false);
@@ -4777,6 +4941,22 @@ document.addEventListener('keydown', function(e){
 </div>
 
 <!-- ═══ ADD CLIENT MODAL ═══ -->
+<!-- ═══ SEND REMINDERS CONFIRMATION MODAL ═══ -->
+<div class="modal-bg" id="send-reminders-modal">
+  <div class="modal" style="width:420px;">
+    <div class="modal-title">Send Reminders</div>
+    <div class="modal-sub">These clients have a payment due tomorrow. Click Send to open Gmail for each one.</div>
+    <div id="reminder-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;max-height:300px;overflow-y:auto;"></div>
+    <div class="modal-btns">
+      <button class="btn btn-go" id="send-reminders-btn" onclick="confirmSendReminders()" style="flex:1;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;vertical-align:middle;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Reminders
+      </button>
+      <button class="btn btn-no" onclick="document.getElementById('send-reminders-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="add-client-modal">
   <div class="modal" style="width:460px;">
     <div class="modal-title">Add Client</div>
@@ -4820,10 +5000,10 @@ document.addEventListener('keydown', function(e){
       </div>
 
       <div class="cst-modal-field">
-        <div class="cst-modal-lbl">Split Ratio <span style="font-weight:400;color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0;">default 60/40</span></div>
+        <div class="cst-modal-lbl">Split Ratio <span style="font-weight:400;color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0;">default 60/40 — set 100/0 for one-time payment</span></div>
         <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 16px;">
           <span style="font-size:12px;color:#a78bfa;font-weight:700;letter-spacing:.5px;">DP</span>
-          <input type="number" class="cst-modal-inp" id="cm-dp-pct" value="60" min="1" max="99"
+          <input type="number" class="cst-modal-inp" id="cm-dp-pct" value="60" min="0" max="100"
             style="width:52px;text-align:center;font-size:20px;font-weight:900;color:#a78bfa;background:transparent;border:none;padding:0;"
             oninput="updateClientPreview()">
           <span style="font-size:12px;color:#a78bfa;font-weight:700;">%</span>
@@ -4875,6 +5055,11 @@ document.addEventListener('keydown', function(e){
       </div>
 
       <div class="cst-modal-field">
+        <div class="cst-modal-lbl">Client Email <span style="font-weight:400;color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0;">(optional — for sending reminders)</span></div>
+        <input type="email" class="cst-modal-inp" id="em-email" placeholder="client@email.com">
+      </div>
+
+      <div class="cst-modal-field">
         <div class="cst-modal-lbl">Total Contract Amount</div>
         <div class="cst-amt-wrap">
           <span class="cst-amt-sym" id="em-sym">₱</span>
@@ -4904,7 +5089,7 @@ document.addEventListener('keydown', function(e){
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="display:flex;align-items:center;gap:6px;background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:7px 12px;flex:1;">
             <span style="font-size:10px;color:#a78bfa;font-weight:700;">DP</span>
-            <input type="number" class="cst-modal-inp" id="em-dp-pct" value="60" min="1" max="99"
+            <input type="number" class="cst-modal-inp" id="em-dp-pct" value="60" min="0" max="100"
               style="width:52px;text-align:center;font-size:14px;font-weight:900;color:#a78bfa;background:transparent;border:none;padding:0;"
               oninput="updateEditPreview()">
             <span style="font-size:10px;color:#a78bfa;font-weight:700;">%</span>
