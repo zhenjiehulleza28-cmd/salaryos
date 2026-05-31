@@ -4927,7 +4927,54 @@ initSupabase();
 renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
 updateCurrencySymbols();
 renderSingilList();computeSingilKPIs();
-initWelcome();
+
+// Show welcome overlay immediately, then check session
+const _welcomeOverlay = document.getElementById('welcome-overlay');
+if(_welcomeOverlay) _welcomeOverlay.style.display='flex';
+showWScreen('ws-intro');
+
+// Check for existing session (handles OAuth redirect and returning users)
+if(_supabase){
+  _supabase.auth.getSession().then(({data:{session}})=>{
+    if(session?.user){
+      _supabaseUser = session.user;
+      const meta = session.user.user_metadata || {};
+      _userProfile = {
+        name: meta.full_name || meta.name || session.user.email?.split('@')[0] || 'User',
+        avatar: (meta.full_name || meta.name || 'U')[0].toUpperCase(),
+        email: session.user.email,
+        type: 'google'
+      };
+      // Has session — hide welcome and enter app
+      if(_welcomeOverlay){
+        _welcomeOverlay.classList.add('fade-out');
+        setTimeout(()=>{ _welcomeOverlay.style.display='none'; }, 600);
+      }
+      loadFromSupabase().then(()=>{
+        updateSidebarProfile();
+        renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
+        updateCurrencySymbols();renderSingilList();computeSingilKPIs();
+      });
+    } else {
+      // No session — check if has local guest data
+      const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
+      if(hasData && S.user){
+        if(_welcomeOverlay) _welcomeOverlay.style.display='none';
+        _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
+        updateSidebarProfile();
+      }
+      // else stay on welcome screen
+    }
+  });
+} else {
+  // No supabase — check local guest data
+  const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
+  if(hasData && S.user){
+    if(_welcomeOverlay) _welcomeOverlay.style.display='none';
+    _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
+    updateSidebarProfile();
+  }
+}
 setTimeout(function(){
   checkAndNotify(false);
   renderNotifPanel();
