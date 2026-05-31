@@ -3496,7 +3496,13 @@ let _supabaseUser = null;
 function initSupabase(){
   if(!window.supabase) return null;
   if(_supabase) return _supabase;
-  _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  });
   // Listen for auth changes (e.g. redirect back after OAuth)
   _supabase.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session?.user){
@@ -3538,7 +3544,7 @@ async function loginGoogle(){
   }
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href }
+    options: { redirectTo: 'https://zhenjiehulleza28-cmd.github.io/salaryos/' }
   });
   if(error) showToast('Login failed: ' + error.message, 'err');
 }
