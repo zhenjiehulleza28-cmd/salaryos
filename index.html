@@ -4882,6 +4882,13 @@ function playSound(type){
 
 let _clearedNotifs = new Set(); // track cleared notif titles to prevent re-adding
 
+function requestPushPermission(){
+  if(!('Notification' in window)) return;
+  Notification.requestPermission().then(perm => {
+    renderNotifPanel();
+  }).catch(()=>{});
+}
+
 function addNotif(title, desc, color, sound){
   // Dedup — skip if same title already exists OR was recently cleared
   if(_notifs.some(n=>n.title===title)) return;
