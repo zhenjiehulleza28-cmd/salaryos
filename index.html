@@ -4256,11 +4256,30 @@ function confirmAddClient(){
   const project = document.getElementById('cm-project')?.value.trim()||'—';
   const amt     = parseFloat((document.getElementById('cm-amount')?.value||'').replace(/,/g,''))||0;
   const billing = document.getElementById('cm-billing')?.value.trim();
-  if(!name)    { showToast('Client name is required.','warn'); return; }
-  if(amt<=0)   { showToast('Enter a valid amount.','warn'); return; }
-  if(!billing) { showToast('Enter a billing date (e.g. 11/26).','warn'); return; }
+  const nameEl  = document.getElementById('cm-name');
+  const amtEl   = document.getElementById('cm-amount');
+  const billEl  = document.getElementById('cm-billing');
+  if(!name){ 
+    showToast('Client name is required.','warn'); 
+    if(nameEl){nameEl.style.borderColor='#F87171';setTimeout(()=>nameEl.style.borderColor='',2000);}
+    return; 
+  }
+  if(amt<=0){ 
+    showToast('Enter a valid amount.','warn'); 
+    if(amtEl){amtEl.style.borderColor='#F87171';setTimeout(()=>amtEl.style.borderColor='',2000);}
+    return; 
+  }
+  if(!billing){ 
+    showToast('Enter a billing date (e.g. 11/26).','warn'); 
+    if(billEl){billEl.style.borderColor='#F87171';setTimeout(()=>billEl.style.borderColor='',2000);}
+    return; 
+  }
   const parsed = parseBillingDate(billing);
-  if(!parsed)  { showToast('Invalid date format. Use MM/DD (e.g. 11/26).','warn'); return; }
+  if(!parsed){ 
+    showToast('Invalid date format. Use MM/DD (e.g. 11/26).','warn'); 
+    if(billEl){billEl.style.borderColor='#F87171';setTimeout(()=>billEl.style.borderColor='',2000);}
+    return; 
+  }
   S.clients.unshift({
     id:Date.now(), name, project, amt,
     billing,       // store the original "11/26" string
@@ -5011,6 +5030,16 @@ setTimeout(function(){
   }, 2000);
 }, 800);
 // realtimeTick — periodic sync check
+function updateLiveClock(){
+  const el = document.getElementById('live-clock');
+  if(!el) return;
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  const date = now.toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+  el.textContent = date+' '+time;
+}
+setInterval(updateLiveClock, 1000);
+
 function realtimeTick(){
   if(_supabase && _supabaseUser){
     loadFromSupabase().catch(()=>{});
@@ -5098,7 +5127,7 @@ document.addEventListener('keydown', function(e){
           <div class="cst-modal-lbl">Total Contract Amount</div>
           <div class="cst-amt-wrap">
             <span class="cst-amt-sym" id="cm-sym">₱</span>
-            <input type="text" inputmode="decimal" class="cst-modal-inp cst-amt-inp" id="cm-amount" placeholder="0.00" oninput="updateClientPreview()">
+            <input type="text" inputmode="decimal" class="cst-modal-inp cst-amt-inp" id="cm-amount" placeholder="0.00" oninput="this.value=this.value.replace(/[^0-9.]/g,'');if((this.value.match(/\./g)||[]).length>1)this.value=this.value.slice(0,-1);updateClientPreview();this.style.borderColor=this.value&&parseFloat(this.value)>0?'':''" onkeypress="return /[0-9.]/.test(event.key)">
           </div>
         </div>
       </div>
@@ -5180,7 +5209,7 @@ document.addEventListener('keydown', function(e){
         <div class="cst-modal-lbl">Total Contract Amount</div>
         <div class="cst-amt-wrap">
           <span class="cst-amt-sym" id="em-sym">₱</span>
-          <input type="text" inputmode="decimal" class="cst-modal-inp cst-amt-inp" id="em-amount" placeholder="0.00">
+          <input type="text" inputmode="decimal" class="cst-modal-inp cst-amt-inp" id="em-amount" placeholder="0.00" oninput="this.value=this.value.replace(/[^0-9.]/g,'');if((this.value.match(/\./g)||[]).length>1)this.value=this.value.slice(0,-1);" onkeypress="return /[0-9.]/.test(event.key)">
         </div>
       </div>
 
