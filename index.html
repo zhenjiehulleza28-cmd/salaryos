@@ -3508,11 +3508,12 @@ function initSupabase(){
         email: session.user.email,
         type: 'google'
       };
+      S.user = _userProfile; // ← persist to S so sidebar shows correctly
       // Try to load user data from Supabase
       await loadFromSupabase();
       // Hide welcome, enter app
       const overlay = document.getElementById('welcome-overlay');
-      if(overlay && overlay.style.display !== 'none'){
+      if(overlay){
         overlay.classList.add('fade-out');
         setTimeout(()=>{ overlay.style.display='none'; }, 600);
       }
@@ -3522,6 +3523,8 @@ function initSupabase(){
     }
     if(event === 'SIGNED_OUT'){
       _supabaseUser = null;
+      _userProfile = {name:'Guest', avatar:'👤', type:'guest'};
+      S.user = null;
     }
   });
   return _supabase;
@@ -3541,11 +3544,18 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
-  const sb = initSupabase();
-  if(sb) await sb.auth.signOut();
+  try{
+    const sb = initSupabase();
+    if(sb) await sb.auth.signOut();
+  } catch(e){ console.warn('signOut error:', e); }
   _userProfile = null;
   _supabaseUser = null;
-  // Reload page to show welcome screen
+  // Clear any cached session
+  try{
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith('sb-') || k.includes('supabase')) localStorage.removeItem(k);
+    });
+  } catch(e){}
   window.location.reload();
 }
 
@@ -4945,6 +4955,7 @@ if(_supabase){
         email: session.user.email,
         type: 'google'
       };
+      S.user = _userProfile; // ← persist so sidebar shows Gmail name
       // Has session — hide welcome and enter app
       if(_welcomeOverlay){
         _welcomeOverlay.classList.add('fade-out');
