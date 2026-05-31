@@ -3678,8 +3678,11 @@ function handleSidebarAuth(){
     // Guest — show login screen directly
     const overlay = document.getElementById('welcome-overlay');
     if(overlay){ 
-      overlay.style.display='flex'; 
-      showWScreen('ws-login'); // go directly to Google login, skip intro
+      overlay.classList.remove('fade-out');
+      overlay.style.display='flex';
+      overlay.style.opacity='1';
+      overlay.style.pointerEvents='all';
+      showWScreen('ws-login');
     }
   }
 }
