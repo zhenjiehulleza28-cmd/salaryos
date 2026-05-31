@@ -1299,6 +1299,21 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
 
 [data-theme="light"] .cst-sp-card{background:#f4f7fc;}
 
+
+/* Fix browser autofill white background */
+#add-client-modal .cst-modal-inp:-webkit-autofill,
+#add-client-modal .cst-modal-inp:-webkit-autofill:hover,
+#add-client-modal .cst-modal-inp:-webkit-autofill:focus,
+#edit-client-modal .cst-modal-inp:-webkit-autofill,
+#edit-client-modal .cst-modal-inp:-webkit-autofill:hover,
+#edit-client-modal .cst-modal-inp:-webkit-autofill:focus{
+  -webkit-box-shadow:0 0 0px 1000px var(--bg3) inset!important;
+  -webkit-text-fill-color:var(--text)!important;
+  box-shadow:0 0 0px 1000px var(--bg3) inset!important;
+  caret-color:var(--text)!important;
+  border-color:var(--border)!important;
+  transition:background-color 5000s ease-in-out 0s!important;
+}
 </style>
 <script>/* jsPDF v2.5.1 — bundled inline for offline support */
 /** @license
@@ -1935,7 +1950,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
             <option value="other">📦 Other</option>
           </select>
           <input type="text" class="exp-log-inp" id="exp-log-desc" placeholder="Description (e.g. Jollibee, Grab…)">
-          <div class="exp-log-inp-amt"><span class="exp-log-pre">₱</span><input type="text" inputmode="decimal" class="exp-log-amt" id="exp-log-amt" placeholder="0.00"></div>
+          <div class="exp-log-inp-amt"><span class="exp-log-pre">₱</span><input type="text" inputmode="decimal" class="exp-log-amt" id="exp-log-amt" placeholder="0.00" oninput="this.value=this.value.replace(/[^0-9.]/g,'');if((this.value.match(/\./g)||[]).length>1)this.value=this.value.slice(0,-1);" onkeypress="return /[0-9.]/.test(event.key)"></div>
           <button class="exp-log-add-btn" onclick="addExpEntry()">+ Add</button>
         </div>
         <!-- Log list -->
@@ -3404,22 +3419,29 @@ function updateAllocBanner(){
 
 // ─── STACKABLE EXPENSE LOG ───
 function addExpEntry(){
-  const cat=document.getElementById('exp-log-cat')?.value||'other';
-  const desc=document.getElementById('exp-log-desc')?.value.trim()||'';
-  const amtRaw=document.getElementById('exp-log-amt')?.value||'';
-  const amt=parseInput(amtRaw);
-  if(!amt||amt<=0)return;
+  const cat    = document.getElementById('exp-log-cat')?.value||'other';
+  const desc   = document.getElementById('exp-log-desc')?.value.trim()||'';
+  const amtRaw = document.getElementById('exp-log-amt')?.value||'';
+  const amt    = parseInput(amtRaw);
+  const amtEl  = document.getElementById('exp-log-amt');
+  const descEl = document.getElementById('exp-log-desc');
+
+  if(!amt||amt<=0){
+    showToast('Enter a valid amount.','warn');
+    if(amtEl){ amtEl.style.borderColor='#F87171'; amtEl.style.outline='1px solid #F87171'; setTimeout(()=>{ amtEl.style.borderColor=''; amtEl.style.outline=''; },2000); }
+    amtEl?.focus();
+    return;
+  }
   const d=yd();if(!d.expLog)d.expLog=[];
   const now=new Date();
   const dateStr=now.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
   d.expLog.unshift({cat,desc:desc||getCatName(cat),amt,date:dateStr,id:Date.now()});
-  // also update the category totals
   if(!d.exp)d.exp={};d.exp[cat]=(d.exp[cat]||0)+amt;
   save();
-  // clear inputs
   if(document.getElementById('exp-log-desc'))document.getElementById('exp-log-desc').value='';
   if(document.getElementById('exp-log-amt'))document.getElementById('exp-log-amt').value='';
   renderExpLog();compute();
+  showToast('Expense added!','ok');
 }
 function removeExpEntry(id){
   const d=yd();if(!d.expLog)return;
@@ -4180,11 +4202,14 @@ function updateClientPreview(){
   if(hint){
     const dpD = daysBetween(parsed.dpDate);
     const balD = daysBetween(parsed.balDate);
-    hint.innerHTML =
+    const detail = document.getElementById('cm-billing-detail');
+    const hintHTML =
       '<span style="color:#a78bfa;font-weight:700;">DP on day '+parsed.dpDay+'</span> · '+fmtDate(parsed.dpDate)+
-      (dpD>=0?' (<span style="color:'+(dpD<=3?'#F87171':dpD<=7?'#FACC15':'#34D399')+'">'+dpD+'d away</span>)':'<span style="color:#F87171"> past!</span>')+
-      '<br><span style="color:#34D399;font-weight:700;">Balance on day '+parsed.balDay+'</span> · '+fmtDate(parsed.balDate)+
-      (balD>=0?' (<span style="color:'+(balD<=3?'#F87171':balD<=7?'#FACC15':'#34D399')+'">'+balD+'d away</span>)':'<span style="color:#F87171"> past!</span>');
+      (dpD>=0?' <span style="color:'+(dpD<=3?'#F87171':dpD<=7?'#FACC15':'#34D399')+'">('+dpD+'d away)</span>':'<span style="color:#F87171"> past!</span>')+
+      '&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:#34D399;font-weight:700;">Balance on day '+parsed.balDay+'</span> · '+fmtDate(parsed.balDate)+
+      (balD>=0?' <span style="color:'+(balD<=3?'#F87171':balD<=7?'#FACC15':'#34D399')+'">('+balD+'d away)</span>':'<span style="color:#F87171"> past!</span>');
+    if(detail){ detail.innerHTML = hintHTML; detail.style.display='block'; }
+    else { hint.innerHTML = hintHTML; }
   }
 }
 
@@ -4259,30 +4284,39 @@ function confirmAddClient(){
   const nameEl  = document.getElementById('cm-name');
   const amtEl   = document.getElementById('cm-amount');
   const billEl  = document.getElementById('cm-billing');
+  const email   = document.getElementById('cm-email')?.value.trim()||'';
+  const emailEl = document.getElementById('cm-email');
+  function flashRed(el){ if(el){el.style.borderColor='#F87171';setTimeout(()=>el.style.borderColor='',2000);} }
+
   if(!name){ 
     showToast('Client name is required.','warn'); 
-    if(nameEl){nameEl.style.borderColor='#F87171';setTimeout(()=>nameEl.style.borderColor='',2000);}
+    flashRed(nameEl);
     return; 
   }
   if(amt<=0){ 
     showToast('Enter a valid amount.','warn'); 
-    if(amtEl){amtEl.style.borderColor='#F87171';setTimeout(()=>amtEl.style.borderColor='',2000);}
+    flashRed(amtEl);
     return; 
   }
   if(!billing){ 
     showToast('Enter a billing date (e.g. 11/26).','warn'); 
-    if(billEl){billEl.style.borderColor='#F87171';setTimeout(()=>billEl.style.borderColor='',2000);}
+    flashRed(billEl);
     return; 
   }
   const parsed = parseBillingDate(billing);
   if(!parsed){ 
     showToast('Invalid date format. Use MM/DD (e.g. 11/26).','warn'); 
-    if(billEl){billEl.style.borderColor='#F87171';setTimeout(()=>billEl.style.borderColor='',2000);}
+    flashRed(billEl);
+    return; 
+  }
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ 
+    showToast('Invalid email format.','warn'); 
+    flashRed(emailEl);
     return; 
   }
   S.clients.unshift({
-    id:Date.now(), name, project, amt,
-    billing,       // store the original "11/26" string
+    id:Date.now(), name, project, amt, email,
+    billing,
     dpDate:parsed.dpDate, balDate:parsed.balDate,
     dpDay:parsed.dpDay, balDay:parsed.balDay,
     dpPct: Math.min(100,Math.max(0,parseFloat(document.getElementById('cm-dp-pct')?.value||60)||60)),
@@ -4738,11 +4772,21 @@ function confirmEditClient(){
   const project = document.getElementById('em-project').value.trim()||'—';
   const amt     = parseFloat((document.getElementById('em-amount').value||'').replace(/,/g,''))||0;
   const billing = document.getElementById('em-billing').value.trim();
-  if(!name)    { showToast('Client name required.','warn'); return; }
-  if(amt<=0)   { showToast('Enter a valid amount.','warn'); return; }
-  if(!billing) { showToast('Enter billing date (MM/DD).','warn'); return; }
+
+  const nameEl  = document.getElementById('em-name');
+  const amtEl   = document.getElementById('em-amount');
+  const billEl  = document.getElementById('em-billing');
+  const emailEl = document.getElementById('em-email');
+
+  function flashRed(el){ if(el){el.style.borderColor='#F87171';setTimeout(()=>el.style.borderColor='',2000);} }
+
+  if(!name)   { showToast('Client name required.','warn'); flashRed(nameEl); return; }
+  if(amt<=0)  { showToast('Enter a valid amount.','warn'); flashRed(amtEl); return; }
+  if(!billing){ showToast('Enter billing date (MM/DD).','warn'); flashRed(billEl); return; }
   const parsed = parseBillingDate(billing);
-  if(!parsed)  { showToast('Invalid format. Use MM/DD (e.g. 11/26).','warn'); return; }
+  if(!parsed) { showToast('Invalid format. Use MM/DD (e.g. 11/26).','warn'); flashRed(billEl); return; }
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showToast('Invalid email format.','warn'); flashRed(emailEl); return; }
+
   c.name=name; c.project=project; c.amt=amt;
   c.billing=billing;
   c.dpDate=parsed.dpDate; c.balDate=parsed.balDate;
@@ -4789,7 +4833,12 @@ function playSound(type){
   }catch(e){ /* audio blocked */ }
 }
 
+let _clearedNotifs = new Set(); // track cleared notif titles to prevent re-adding
+
 function addNotif(title, desc, color, sound){
+  // Dedup — skip if same title already exists OR was recently cleared
+  if(_notifs.some(n=>n.title===title)) return;
+  if(_clearedNotifs.has(title)) return;
   const id = Date.now() + Math.random();
   _notifs.unshift({id, title, desc, color, sound, time:new Date()});
   if(_notifs.length > 30) _notifs = _notifs.slice(0,30);
@@ -4801,11 +4850,14 @@ function addNotif(title, desc, color, sound){
 }
 
 function dismissNotif(id){
+  const notif = _notifs.find(n=>n.id===id);
+  if(notif) _clearedNotifs.add(notif.title);
   _notifs = _notifs.filter(n=>n.id!==id);
   renderNotifPanel();
 }
 
 function clearAllNotifs(){
+  _notifs.forEach(n=>_clearedNotifs.add(n.title));
   _notifs = [];
   renderNotifPanel();
 }
@@ -4972,15 +5024,15 @@ renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBud
 updateCurrencySymbols();
 renderSingilList();computeSingilKPIs();
 
-// Show welcome overlay immediately, then check session
+// Hide welcome overlay while checking session
 const _welcomeOverlay = document.getElementById('welcome-overlay');
-if(_welcomeOverlay) _welcomeOverlay.style.display='flex';
-showWScreen('ws-intro');
+if(_welcomeOverlay) _welcomeOverlay.style.display='none';
 
-// Check for existing session (handles OAuth redirect and returning users)
+// Check for existing session first, THEN decide to show welcome or not
 if(_supabase){
   _supabase.auth.getSession().then(({data:{session}})=>{
     if(session?.user){
+      // Has valid session — go straight into app
       _supabaseUser = session.user;
       const meta = session.user.user_metadata || {};
       _userProfile = {
@@ -4989,35 +5041,38 @@ if(_supabase){
         email: session.user.email,
         type: 'google'
       };
-      S.user = _userProfile; // ← persist so sidebar shows Gmail name
-      // Has session — hide welcome and enter app
-      if(_welcomeOverlay){
-        _welcomeOverlay.classList.add('fade-out');
-        setTimeout(()=>{ _welcomeOverlay.style.display='none'; }, 600);
-      }
+      S.user = _userProfile;
+      if(_welcomeOverlay) _welcomeOverlay.style.display='none';
       loadFromSupabase().then(()=>{
         updateSidebarProfile();
         renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
         updateCurrencySymbols();renderSingilList();computeSingilKPIs();
       });
     } else {
-      // No session — check if has local guest data
+      // No session — check guest data, otherwise show welcome
       const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
-      if(hasData && S.user){
+      if(hasData && S.user && S.user.type){
         if(_welcomeOverlay) _welcomeOverlay.style.display='none';
-        _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
+        _userProfile=S.user||{name:'Guest',avatar:'👤',type:'guest'};
         updateSidebarProfile();
+      } else {
+        // Show welcome screen
+        if(_welcomeOverlay){ _welcomeOverlay.style.display='flex'; showWScreen('ws-intro'); }
       }
-      // else stay on welcome screen
     }
+  }).catch(()=>{
+    // Error checking session — show welcome
+    if(_welcomeOverlay){ _welcomeOverlay.style.display='flex'; showWScreen('ws-intro'); }
   });
 } else {
-  // No supabase — check local guest data
+  // No supabase — check guest data
   const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
-  if(hasData && S.user){
+  if(hasData && S.user && S.user.type){
     if(_welcomeOverlay) _welcomeOverlay.style.display='none';
-    _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
+    _userProfile=S.user||{name:'Guest',avatar:'👤',type:'guest'};
     updateSidebarProfile();
+  } else {
+    if(_welcomeOverlay){ _welcomeOverlay.style.display='flex'; showWScreen('ws-intro'); }
   }
 }
 setTimeout(function(){
@@ -5137,9 +5192,9 @@ document.addEventListener('keydown', function(e){
           <div class="cst-modal-lbl">Billing Date <span style="font-weight:400;color:var(--muted);font-size:10px;text-transform:none;letter-spacing:0;">MM/DD</span></div>
           <div style="display:flex;align-items:center;gap:10px;">
             <input type="text" class="cst-modal-inp" id="cm-billing" placeholder="11/26" maxlength="5"
-              style="width:90px;text-align:center;font-size:18px;font-weight:800;letter-spacing:2px;padding:10px 8px;"
+              style="width:90px;flex-shrink:0;text-align:center;font-size:18px;font-weight:800;letter-spacing:2px;padding:10px 8px;"
               oninput="updateClientPreview()">
-            <div style="flex:1;font-size:11px;color:var(--muted);line-height:1.6;" id="cm-billing-hint">
+            <div style="flex:1;font-size:10px;color:var(--muted);line-height:1.5;overflow:hidden;" id="cm-billing-hint">
               MM = DP day<br>DD = Balance day
             </div>
           </div>
@@ -5158,6 +5213,9 @@ document.addEventListener('keydown', function(e){
           </div>
         </div>
       </div>
+
+      <!-- Billing hint full width — shows after typing -->
+      <div id="cm-billing-detail" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:11px;line-height:1.8;"></div>
 
       <!-- Live split preview -->
       <div class="cst-split-preview" id="cm-preview" style="display:none;">
