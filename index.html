@@ -3581,7 +3581,10 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
-  // 1. Clear ALL supabase localStorage keys FIRST
+  // 1. Set flag — force welcome screen on next load
+  localStorage.setItem('sos_logged_out', '1');
+
+  // 2. Clear ALL supabase localStorage keys
   try{
     const keysToRemove = [];
     for(let i = 0; i < localStorage.length; i++){
@@ -3593,21 +3596,21 @@ async function logoutUser(){
     keysToRemove.forEach(k => localStorage.removeItem(k));
   } catch(e){}
 
-  // 2. Clear session storage
+  // 3. Clear session storage
   try{ sessionStorage.clear(); } catch(e){}
 
-  // 3. Sign out from Supabase (non-blocking)
+  // 4. Sign out from Supabase (non-blocking)
   try{
     if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
   } catch(e){}
 
-  // 4. Reset state
+  // 5. Reset state
   _supabaseUser = null;
   _supabase = null;
   _userProfile = { name:'Guest', avatar:'G', type:'guest' };
   S.user = null;
 
-  // 5. Force reload immediately
+  // 6. Force reload
   setTimeout(()=>{ window.location.reload(true); }, 200);
 }
 
@@ -5089,8 +5092,11 @@ updateSidebarProfile(); // show Guest by default
 const _welcomeOverlay = document.getElementById('welcome-overlay');
 if(_welcomeOverlay) _welcomeOverlay.style.display='none';
 
-// Check for existing session first, THEN decide to show welcome or not
-if(_supabase){
+// If user just logged out — show welcome screen immediately
+if(localStorage.getItem('sos_logged_out')){
+  localStorage.removeItem('sos_logged_out');
+  if(_welcomeOverlay){ _welcomeOverlay.style.display='flex'; showWScreen('ws-login'); }
+} else if(_supabase){
   _supabase.auth.getSession().then(({data:{session}})=>{
     if(session?.user){
       // Has valid session — go straight into app
