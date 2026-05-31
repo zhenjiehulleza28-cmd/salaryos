@@ -97,9 +97,9 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--bg0);color:v
 .kpi-chip{font-size:10px;font-weight:600;padding:4px 11px;border-radius:20px;margin-top:10px;display:inline-block;background:var(--bg5);color:var(--text2);}
 
 /* ── LAYOUT ── */
-.row-2{display:grid;grid-template-columns:1.85fr 1fr;gap:14px;margin-bottom:16px;}
+.row-2{display:grid;grid-template-columns:1.85fr 1fr;gap:14px;margin-bottom:16px;align-items:start;}
 .row-full{margin-bottom:14px;}
-.col{display:flex;flex-direction:column;gap:14px;}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0;overflow:hidden;}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px 24px;overflow:hidden;transition:background .3s,border-color .3s;box-shadow:var(--shadow);}
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .ph-left{display:flex;align-items:center;gap:8px;}
@@ -192,9 +192,9 @@ input.vc-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;opac
 .bc-amt{font-size:16px;font-weight:800;letter-spacing:-.3px;transition:.3s;}
 .bc-pct{font-size:10px;color:var(--muted);}
 .stiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.stile{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 14px;transition:background .3s;}
+.stile{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 14px;transition:background .3s;height:72px;min-height:72px;max-height:72px;overflow:hidden;}
 .stile-lbl{font-size:10px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
-.stile-val{font-size:17px;font-weight:800;transition:.3s;}
+.stile-val{font-size:15px;font-weight:800;transition:.3s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── EXPENSES ── */
 .exp-cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:14px;}
@@ -1909,7 +1909,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       </div>
     </div>
   </div>
-  <div class="page" id="page-salary">
+  <div class="page" id="page-salary" style="min-width:0;overflow-x:hidden;">
     <div class="kpi-row">
       <div class="kpi" style="--acc:var(--blue)"><div class="kpi-lbl">Total Income</div><div class="kpi-val" id="k-total">₱0.00</div><div class="kpi-chip" id="k-total-s">0 months</div></div>
       <div class="kpi" style="--acc:var(--purple)"><div class="kpi-lbl">Monthly Avg</div><div class="kpi-val" id="k-avg">₱0.00</div><div class="kpi-chip" id="k-avg-s">—</div></div>
@@ -1917,14 +1917,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       <div class="kpi" style="--acc:var(--yellow)"><div class="kpi-lbl">Latest MoM</div><div class="kpi-val" id="k-mom">—</div><div class="kpi-chip" id="k-mom-s">log 2+ months</div></div>
       <div class="kpi" style="--acc:#00D5E6"><div class="kpi-lbl">Total Split</div><div class="kpi-val" id="k-alloc">₱0.00</div><div class="kpi-chip">auto split</div></div>
     </div>
-    <div class="row-2">
-      <div class="panel">
+    <div class="row-2" style="align-items:start;">
+      <div class="panel" style="overflow:hidden;">
         <div class="ph"><div class="ph-left"><div class="ph-bar" style="background:var(--blue);"></div><span class="ph-lbl">Monthly Log</span></div><span class="ph-chip" style="background:rgba(123,189,232,.09);color:var(--blue);">type to compute</span></div>
         <div class="inp-head"><div>#</div><div>Month</div><div style="color:var(--blue);">Salary</div><div style="color:var(--green);">Diff</div><div style="color:var(--yellow);">MoM %</div><div style="color:#00D5E6;">Trend</div><div style="color:var(--purple);">📝 Notes</div></div>
         <div class="inp-rows" id="salary-rows"></div>
       </div>
-      <div class="col">
-        <div class="panel">
+      <div class="col" style="min-width:0;overflow:hidden;">
+        <div class="panel" style="overflow:hidden;">
           <div class="ph"><div class="ph-left"><div class="ph-bar" style="background:#00D5E6;"></div><span class="ph-lbl">Quick Look</span></div></div>
           <div class="stiles">
             <div class="stile"><div class="stile-lbl">Best Month</div><div class="stile-val" id="st-best" style="color:var(--green);">—</div></div>
