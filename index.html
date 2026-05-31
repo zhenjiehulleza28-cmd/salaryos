@@ -2514,6 +2514,7 @@ function buildRows(){
     const raw=sal[i]!==null?String(sal[i]):'';
     const displayed=fmtInput(raw);
     const r=document.createElement('div');r.className='irow';
+    r.style.cssText='grid-template-columns:26px 80px 100px 110px 100px 80px 140px;height:38px;min-height:38px;max-height:38px;overflow:hidden;';
     r.innerHTML=`<div><span class="irow-num">${i+1}</span></div><div><span class="irow-month">${m}<span>${S.active}</span></span></div><div><input type="text" inputmode="decimal" id="si-${i}" placeholder="0.00" value="${displayed}"></div><div><span class="cval" id="sd-${i}" style="color:var(--muted)">—</span></div><div><span class="cval" id="sm-${i}" style="color:var(--muted)">—</span></div><div><span class="cval" id="str-${i}" style="color:var(--muted)">—</span></div><div><input type="text" id="sn-${i}" placeholder="add a note…" value="${notes[i]||''}"></div>`;
     c.appendChild(r);
     const inp=document.getElementById('si-'+i);
