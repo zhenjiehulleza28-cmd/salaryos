@@ -3675,9 +3675,12 @@ function handleSidebarAuth(){
   if(user && user.type === 'google'){
     logoutUser();
   } else {
-    // Guest — show login
+    // Guest — show login screen directly
     const overlay = document.getElementById('welcome-overlay');
-    if(overlay){ overlay.style.display='flex'; showWScreen('ws-intro'); }
+    if(overlay){ 
+      overlay.style.display='flex'; 
+      showWScreen('ws-login'); // go directly to Google login, skip intro
+    }
   }
 }
 
