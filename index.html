@@ -3581,12 +3581,7 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
-  try{
-    // 1. Sign out from Supabase
-    if(_supabase) await _supabase.auth.signOut({ scope: 'global' });
-  } catch(e){ console.warn('signOut error:', e); }
-
-  // 2. Clear ALL supabase-related localStorage keys
+  // 1. Clear ALL supabase localStorage keys FIRST
   try{
     const keysToRemove = [];
     for(let i = 0; i < localStorage.length; i++){
@@ -3598,17 +3593,22 @@ async function logoutUser(){
     keysToRemove.forEach(k => localStorage.removeItem(k));
   } catch(e){}
 
-  // 3. Clear all session/cookie storage
+  // 2. Clear session storage
   try{ sessionStorage.clear(); } catch(e){}
 
-  // 4. Reset in-memory state
+  // 3. Sign out from Supabase (non-blocking)
+  try{
+    if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
+  } catch(e){}
+
+  // 4. Reset state
   _supabaseUser = null;
   _supabase = null;
   _userProfile = { name:'Guest', avatar:'G', type:'guest' };
   S.user = null;
 
-  // 5. Hard reload — no cache
-  window.location.href = window.location.href.split('?')[0].split('#')[0];
+  // 5. Force reload immediately
+  setTimeout(()=>{ window.location.reload(true); }, 200);
 }
 
 async function saveToSupabase(){
