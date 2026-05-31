@@ -3624,17 +3624,51 @@ function updateSidebarProfile(){
   }
 }
 function initWelcome(){
-  const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
   const overlay=document.getElementById('welcome-overlay');
   if(!overlay)return;
-  if(hasData&&S.user){
-    // Already set up — skip welcome
-    overlay.style.display='none';
-    _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
-    updateSidebarProfile();
+
+  // Check if already logged in via Supabase session
+  if(_supabase){
+    _supabase.auth.getSession().then(({data:{session}})=>{
+      if(session?.user){
+        // Already logged in — hide welcome
+        _supabaseUser = session.user;
+        const meta = session.user.user_metadata || {};
+        _userProfile = {
+          name: meta.full_name || meta.name || session.user.email?.split('@')[0] || 'User',
+          avatar: (meta.full_name || meta.name || 'U')[0].toUpperCase(),
+          email: session.user.email,
+          type: 'google'
+        };
+        overlay.style.display='none';
+        loadFromSupabase().then(()=>{
+          updateSidebarProfile();
+          renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
+          updateCurrencySymbols();renderSingilList();computeSingilKPIs();
+        });
+        return;
+      }
+      // Not logged in — check local data
+      const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
+      if(hasData&&S.user){
+        overlay.style.display='none';
+        _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
+        updateSidebarProfile();
+      } else {
+        overlay.style.display='flex';
+        showWScreen('ws-intro');
+      }
+    });
   } else {
-    overlay.style.display='flex';
-    showWScreen('ws-intro');
+    const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
+    if(hasData&&S.user){
+      overlay.style.display='none';
+      _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
+      updateSidebarProfile();
+    } else {
+      overlay.style.display='flex';
+      showWScreen('ws-intro');
+    }
   }
 }
 // ─── IMPORT (kept for JSON import from welcome screen) ───
