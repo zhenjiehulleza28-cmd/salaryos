@@ -424,7 +424,7 @@ canvas{display:block;}
 .pin-key-ghost{font-size:14px;color:var(--muted2);background:transparent;}
 
 /* ── SPARKLINES ── */
-.kpi-spark{display:block;margin-top:8px;opacity:.65;}
+.kpi-spark{display:block;position:absolute;bottom:0;left:0;right:0;opacity:.5;pointer-events:none;}
 
 /* ── COLLAPSIBLE ── */
 .collapse-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
@@ -3965,7 +3965,7 @@ function addSparklinesHTML(){
   kpiIds.forEach((kid,i)=>{
     const kpiEl=document.getElementById(kid)?.closest('.kpi');if(!kpiEl)return;
     if(!kpiEl.querySelector('canvas')){
-      const cv=document.createElement('canvas');cv.id=sparkIds[i];cv.className='kpi-spark';cv.style.width='100%';
+      const cv=document.createElement('canvas');cv.id=sparkIds[i];cv.className='kpi-spark';cv.style.width='100%';cv.style.height='40px';
       kpiEl.appendChild(cv);
     }
   });
