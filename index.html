@@ -6636,9 +6636,8 @@ function updateLiveClock(){
 setInterval(updateLiveClock, 1000);
 
 function realtimeTick(){
-  if(_supabase && _supabaseUser){
-    loadFromSupabase().catch(()=>{});
-  }
+  // NOTE: Do NOT call loadFromSupabase() here — it would overwrite local unsaved changes
+  // Supabase sync is handled by save() debounce (200ms) and force-save on logout
   updateLiveClock();
   checkAndNotify(false);
 }
