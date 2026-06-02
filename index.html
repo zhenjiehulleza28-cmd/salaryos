@@ -4459,10 +4459,12 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
-  // 1. Set flag — force welcome screen on next load
-  localStorage.setItem('sos_logged_out', '1');
+  // 1. Sign out from Supabase first (non-blocking)
+  try{
+    if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
+  } catch(e){}
 
-  // 2. Clear ALL supabase localStorage keys
+  // 2. Clear ALL supabase auth keys from localStorage
   try{
     const keysToRemove = [];
     for(let i = 0; i < localStorage.length; i++){
@@ -4474,26 +4476,26 @@ async function logoutUser(){
     keysToRemove.forEach(k => localStorage.removeItem(k));
   } catch(e){}
 
-  // 3. Clear session storage
-  try{ sessionStorage.clear(); } catch(e){}
-
-  // 4. Sign out from Supabase (non-blocking)
+  // 3. Clear app data cache — user's data stays safe in Supabase
   try{
-    if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
+    localStorage.removeItem('sos4');
+    localStorage.removeItem('sos4_uid');
+    localStorage.removeItem('sos_logged_out');
   } catch(e){}
 
-  // 5. Reset state
+  // 4. Clear session storage
+  try{ sessionStorage.clear(); } catch(e){}
+
+  // 5. Reset in-memory state
   _supabaseUser = null;
   _supabase = null;
   _userProfile = { name:'Guest', avatar:'G', type:'guest' };
   S.user = null;
 
-  // 6. Clear app data from localStorage so next user starts clean
-  try{ localStorage.removeItem('sos4'); } catch(e){}
-
-  // 7. Force reload
+  // 6. Reload to show login screen fresh
   setTimeout(()=>{ window.location.reload(true); }, 200);
 }
+
 
 async function saveToSupabase(){
   if(!_supabase || !_supabaseUser) return;
@@ -4514,13 +4516,18 @@ async function loadFromSupabase(){
       .select('data')
       .eq('user_id', _supabaseUser.id)
       .single();
+
     if(data?.data){
-      // Found data for this user — load it (overwrites any leftover localStorage from prev user)
+      // Found this user's data in Supabase — load it, overwrite localStorage cache
       const imported = JSON.parse(data.data);
-      if(imported.years && imported.data) Object.assign(S, imported);
+      if(imported.years && imported.data){
+        Object.assign(S, imported);
+        // Make sure user profile is current session's user
+        S.user = _userProfile;
+      }
       save();
     } else {
-      // Brand new user or no data yet — wipe any leftover data from a previous user's localStorage
+      // New user — no data in Supabase yet, start fresh
       const currentYear = new Date().getFullYear();
       S = {
         years: [currentYear],
@@ -4538,30 +4545,23 @@ async function loadFromSupabase(){
     }
   } catch(e){
     console.warn('Supabase load failed:', e);
-    // On error, still wipe localStorage to avoid showing wrong user's data
+    // On network error — still start fresh to avoid showing wrong user's data
     const currentYear = new Date().getFullYear();
-    S = {
-      years: [currentYear],
-      active: currentYear,
-      theme: S.theme || 'dark',
-      currency: S.currency || 'PHP',
-      data: {},
-      user: _userProfile,
-      customCats: [],
-      clients: [],
-      setupDone: false
-    };
-    S.data[currentYear] = freshYear();
-    save();
+    if(!S.data || Object.keys(S.data).length === 0){
+      S.data = {};
+      S.data[currentYear] = freshYear();
+      if(!S.years || !S.years.includes(currentYear)) S.years = [currentYear];
+      S.active = currentYear;
+    }
   }
 }
+
 
 // Override save() to also sync to Supabase
 function save(){
   try{ localStorage.setItem('sos4', JSON.stringify(S)); }catch{}
-  // Also persist the logged-in user's id so we can detect account switches on reload
+  // Debounced sync to Supabase (Google users only)
   if(_supabaseUser){
-    try{ localStorage.setItem('sos4_uid', _supabaseUser.id); }catch{}
     clearTimeout(save._timer);
     save._timer = setTimeout(saveToSupabase, 2000);
   }
@@ -4645,11 +4645,10 @@ function initWelcome(){
   const overlay=document.getElementById('welcome-overlay');
   if(!overlay)return;
 
-  // Check if already logged in via Supabase session
   if(_supabase){
     _supabase.auth.getSession().then(({data:{session}})=>{
       if(session?.user){
-        // Already logged in via session
+        // ── GOOGLE USER: active session found ──
         _supabaseUser = session.user;
         const meta = session.user.user_metadata || {};
         _userProfile = {
@@ -4659,56 +4658,47 @@ function initWelcome(){
           type: 'google'
         };
         S.user = _userProfile;
-        // Hide welcome and load THIS user's data from Supabase
-        // (loadFromSupabase will overwrite any stale localStorage from a previous user)
         overlay.style.display='none';
+        // Always load from Supabase — this is the source of truth for Google users
+        // It will overwrite whatever is in localStorage (could be from a different user)
         loadFromSupabase().then(()=>{
           updateSidebarProfile();
-          renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
+          renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();
+          buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();
+          updateAllocBanner();addSparklinesHTML();compute();
           updateCurrencySymbols();renderSingilList();computeSingilKPIs();
         });
         return;
       }
-      // No active session — clear any stale localStorage data before showing login
-      try{ localStorage.removeItem('sos4'); } catch(e){}
-      // Not logged in — check local data
-      // Clear localStorage if it belonged to a different Google user
-      const storedUid = localStorage.getItem('sos4_uid');
-      if(storedUid){
-        // There was a logged-in user before — don't show their data to a new visitor
-        try{ localStorage.removeItem('sos4'); localStorage.removeItem('sos4_uid'); }catch(e){}
-        S = {years:[new Date().getFullYear()],active:new Date().getFullYear(),theme:'dark',currency:'PHP',data:{},customCats:[],clients:[]};
-        S.data[S.active]=freshYear();
-      }
-      const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
-      if(hasData&&S.user&&S.user.type==='guest'){
-        overlay.style.display='none';
-        _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
-        updateSidebarProfile();
-      } else {
-        overlay.style.display='flex';
-        showWScreen('ws-intro');
-      }
-    });
-  } else {
-    // No Supabase — guest mode only. Clear any stale Google-user data.
-    const storedUid = localStorage.getItem('sos4_uid');
-    if(storedUid){
-      try{ localStorage.removeItem('sos4'); localStorage.removeItem('sos4_uid'); }catch(e){}
-      S = {years:[new Date().getFullYear()],active:new Date().getFullYear(),theme:'dark',currency:'PHP',data:{},customCats:[],clients:[]};
-      S.data[S.active]=freshYear();
-    }
-    const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
-    if(hasData&&S.user&&S.user.type==='guest'){
-      overlay.style.display='none';
-      _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
-      updateSidebarProfile();
-    } else {
+
+      // ── NO SESSION: show login screen ──
+      // Clear any leftover localStorage from a previous Google session
+      // so a new visitor or guest never sees another user's data
+      try{
+        localStorage.removeItem('sos4');
+        localStorage.removeItem('sos4_uid');
+      } catch(e){}
+      // Reset in-memory state to blank
+      const yr = new Date().getFullYear();
+      S = {years:[yr],active:yr,theme:'dark',currency:'PHP',data:{},customCats:[],clients:[]};
+      S.data[yr] = freshYear();
+
       overlay.style.display='flex';
       showWScreen('ws-intro');
-    }
+    });
+  } else {
+    // ── NO SUPABASE CONFIG: guest-only mode ──
+    // Clear any leftover data from a previous Google session
+    try{
+      localStorage.removeItem('sos4');
+      localStorage.removeItem('sos4_uid');
+    } catch(e){}
+    overlay.style.display='flex';
+    showWScreen('ws-intro');
   }
 }
+
+
 // ─── IMPORT (kept for JSON import from welcome screen) ───
 
 
