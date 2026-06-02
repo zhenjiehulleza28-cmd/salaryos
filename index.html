@@ -74,7 +74,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .ip-yr{font-size:11px;color:var(--text2);margin-top:2px;}
 
 /* ── MAIN ── */
-.main{margin-left:242px;flex:1;display:flex;flex-direction:column;min-height:100vh;width:calc(100vw - 224px);}
+.main{margin-left:242px;flex:1;display:flex;flex-direction:column;min-height:100vh;width:calc(100vw - 242px);}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--border);background:var(--bg0);position:sticky;top:0;z-index:100;transition:background .3s;width:100%;}
 [data-theme="dark"] .topbar{background:rgba(2,9,22,.9);}
 .tb-left .tb-title{font-size:20px;font-weight:900;letter-spacing:-.5px;color:var(--text-strong);}
@@ -664,7 +664,7 @@ canvas{display:block;}
 #page-budget.active,#page-networth.active,#page-compare.active{display:block;}
 
 /* ── MAIN WIDTH FIX ── */
-.main{margin-left:242px;flex:1;display:flex;flex-direction:column;min-height:100vh;width:calc(100vw - 224px);max-width:calc(100vw - 224px);}
+.main{margin-left:242px;flex:1;display:flex;flex-direction:column;min-height:100vh;width:calc(100vw - 242px);max-width:calc(100vw - 242px);}
 .page{width:100%;box-sizing:border-box;}
 
 /* ── MOBILE BOTTOM NAV ── */
@@ -3679,14 +3679,15 @@ function closeMobNav(){
 }
 
 // ─── BUDGET PLANNER ───
+function buildBudget(){
   // repopulate exp-log-cat dropdown with custom cats
   const expLogCat=document.getElementById('exp-log-cat');
   if(expLogCat){
     const allCatOptions=getAllCats();
+    const prevVal=expLogCat.value;
     expLogCat.innerHTML=allCatOptions.map(c=>`<option value="${c.key}">${c.name}</option>`).join('');
+    if(prevVal)expLogCat.value=prevVal;
   }
-
-function buildBudget(){
   const d=yd();if(!d.budget)d.budget={};
   const c=document.getElementById('budget-list');if(!c)return;c.innerHTML='';
   const sym=getCurrency().sym;
@@ -3944,6 +3945,10 @@ function exportPDF(pages){
   const pfmt = n => (n==null||isNaN(n)) ? '--' : pdfSym+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
 
   try{
+    if(!window.jspdf || !window.jspdf.jsPDF){
+      showToast('PDF library is still loading. Please try again in a few seconds.','warn');
+      return;
+    }
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
     const pW=doc.internal.pageSize.getWidth(); // 595.28
@@ -4483,7 +4488,10 @@ async function logoutUser(){
   _userProfile = { name:'Guest', avatar:'G', type:'guest' };
   S.user = null;
 
-  // 6. Force reload
+  // 6. Clear app data from localStorage so next user starts clean
+  try{ localStorage.removeItem('sos4'); } catch(e){}
+
+  // 7. Force reload
   setTimeout(()=>{ window.location.reload(true); }, 200);
 }
 
@@ -4507,19 +4515,53 @@ async function loadFromSupabase(){
       .eq('user_id', _supabaseUser.id)
       .single();
     if(data?.data){
+      // Found data for this user — load it (overwrites any leftover localStorage from prev user)
       const imported = JSON.parse(data.data);
       if(imported.years && imported.data) Object.assign(S, imported);
-      save(); // also keep local copy
+      save();
+    } else {
+      // Brand new user or no data yet — wipe any leftover data from a previous user's localStorage
+      const currentYear = new Date().getFullYear();
+      S = {
+        years: [currentYear],
+        active: currentYear,
+        theme: S.theme || 'dark',
+        currency: S.currency || 'PHP',
+        data: {},
+        user: _userProfile,
+        customCats: [],
+        clients: [],
+        setupDone: false
+      };
+      S.data[currentYear] = freshYear();
+      save();
     }
-  } catch(e){ console.warn('Supabase load failed:', e); }
+  } catch(e){
+    console.warn('Supabase load failed:', e);
+    // On error, still wipe localStorage to avoid showing wrong user's data
+    const currentYear = new Date().getFullYear();
+    S = {
+      years: [currentYear],
+      active: currentYear,
+      theme: S.theme || 'dark',
+      currency: S.currency || 'PHP',
+      data: {},
+      user: _userProfile,
+      customCats: [],
+      clients: [],
+      setupDone: false
+    };
+    S.data[currentYear] = freshYear();
+    save();
+  }
 }
 
-// Override save() to also push to Supabase
-const _localSave = save;
+// Override save() to also sync to Supabase
 function save(){
   try{ localStorage.setItem('sos4', JSON.stringify(S)); }catch{}
-  // Debounced Supabase sync (only if logged in via Google)
+  // Also persist the logged-in user's id so we can detect account switches on reload
   if(_supabaseUser){
+    try{ localStorage.setItem('sos4_uid', _supabaseUser.id); }catch{}
     clearTimeout(save._timer);
     save._timer = setTimeout(saveToSupabase, 2000);
   }
@@ -4607,7 +4649,7 @@ function initWelcome(){
   if(_supabase){
     _supabase.auth.getSession().then(({data:{session}})=>{
       if(session?.user){
-        // Already logged in — hide welcome
+        // Already logged in via session
         _supabaseUser = session.user;
         const meta = session.user.user_metadata || {};
         _userProfile = {
@@ -4616,6 +4658,9 @@ function initWelcome(){
           email: session.user.email,
           type: 'google'
         };
+        S.user = _userProfile;
+        // Hide welcome and load THIS user's data from Supabase
+        // (loadFromSupabase will overwrite any stale localStorage from a previous user)
         overlay.style.display='none';
         loadFromSupabase().then(()=>{
           updateSidebarProfile();
@@ -4624,9 +4669,19 @@ function initWelcome(){
         });
         return;
       }
+      // No active session — clear any stale localStorage data before showing login
+      try{ localStorage.removeItem('sos4'); } catch(e){}
       // Not logged in — check local data
+      // Clear localStorage if it belonged to a different Google user
+      const storedUid = localStorage.getItem('sos4_uid');
+      if(storedUid){
+        // There was a logged-in user before — don't show their data to a new visitor
+        try{ localStorage.removeItem('sos4'); localStorage.removeItem('sos4_uid'); }catch(e){}
+        S = {years:[new Date().getFullYear()],active:new Date().getFullYear(),theme:'dark',currency:'PHP',data:{},customCats:[],clients:[]};
+        S.data[S.active]=freshYear();
+      }
       const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
-      if(hasData&&S.user){
+      if(hasData&&S.user&&S.user.type==='guest'){
         overlay.style.display='none';
         _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
         updateSidebarProfile();
@@ -4636,8 +4691,15 @@ function initWelcome(){
       }
     });
   } else {
+    // No Supabase — guest mode only. Clear any stale Google-user data.
+    const storedUid = localStorage.getItem('sos4_uid');
+    if(storedUid){
+      try{ localStorage.removeItem('sos4'); localStorage.removeItem('sos4_uid'); }catch(e){}
+      S = {years:[new Date().getFullYear()],active:new Date().getFullYear(),theme:'dark',currency:'PHP',data:{},customCats:[],clients:[]};
+      S.data[S.active]=freshYear();
+    }
     const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
-    if(hasData&&S.user){
+    if(hasData&&S.user&&S.user.type==='guest'){
       overlay.style.display='none';
       _userProfile=S.user||{name:'',avatar:'👤',type:'guest'};
       updateSidebarProfile();
@@ -4885,14 +4947,6 @@ function qaDeleteCustomCat(){
   modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 26px;width:300px;box-shadow:0 40px 100px rgba(0,0,0,.65);"><div style="font-size:18px;font-weight:900;color:var(--text-strong);margin-bottom:6px;">Delete Category?</div><div style="font-size:12px;color:var(--muted);margin-bottom:20px;">This custom category will be permanently removed.</div><div style="display:flex;gap:8px;"><button onclick="doQaDelCat('${_key}')" style="flex:1;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:11px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:#F87171;cursor:pointer;">Delete</button><button onclick="this.closest('[style*=fixed]').remove()" style="background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</button></div></div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-  return;
-  deleteCustomCat(key);
-  const allCats=getAllCats();
-  sel.innerHTML=allCats.map(c=>`<option value="${c.key}">${c.name}</option>`).join('')
-    +'<option value="__new__">+ New Category…</option>';
-  sel.value=allCats[0]?.key||'food';
-  document.getElementById('qa-del-cat-btn').style.display='none';
-  showToast('🗑️ Category deleted');
 }
 function closeQuickModal(){animatedModalClose('quick-modal');}
 function submitQuickAdd(){
@@ -5194,11 +5248,11 @@ function drawBizChart(){
     const incH=Math.max(incArr[i]>0?(incArr[i]/maxVal)*cH:0,2);
     const ig=ctx.createLinearGradient(0,0,0,cH);
     ig.addColorStop(0,'#34D399');ig.addColorStop(1,'rgba(52,211,153,.25)');
-    ctx.fillStyle=ig;ctx.beginPath();ctx.roundRect(x,P.t+cH-incH,bW*.46,incH,3);ctx.fill();
+    ctx.fillStyle=ig;rr(ctx,x,P.t+cH-incH,bW*.46,incH,3);ctx.fill();
     const expH=Math.max(expArr[i]>0?(expArr[i]/maxVal)*cH:0,2);
     const eg=ctx.createLinearGradient(0,0,0,cH);
     eg.addColorStop(0,'#F87171');eg.addColorStop(1,'rgba(248,113,113,.25)');
-    ctx.fillStyle=eg;ctx.beginPath();ctx.roundRect(x+bW*.5,P.t+cH-expH,bW*.46,expH,3);ctx.fill();
+    ctx.fillStyle=eg;rr(ctx,x+bW*.5,P.t+cH-expH,bW*.46,expH,3);ctx.fill();
     // month label
     ctx.fillStyle='rgba(125,149,175,.65)';ctx.font='bold 8px Montserrat,sans-serif';
     ctx.textAlign='center';ctx.fillText(months[i],x+bW/2,H-P.b+14);
@@ -5307,8 +5361,9 @@ function makeCollapsible(headerId, bodyId, defaultOpen=true){
 
 // ─── VAULT HOVER TOOLTIPS ───
 function addVaultTooltips(vaults,vAmts,total){
+  const _vcCards=document.querySelectorAll('#vault-cards .vc');
   vaults.forEach((v,i)=>{
-    const card=document.querySelector(`#vault-cards .vc:nth-child(${i+1})`);
+    const card=_vcCards[i];
     if(!card)return;
     let tt=card.querySelector('.vault-tooltip');
     if(!tt){tt=document.createElement('div');tt.className='vault-tooltip';card.appendChild(tt);}
@@ -5512,6 +5567,7 @@ function fmtDate(s){
   const d = new Date(s + 'T00:00:00');
   return d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
 }
+const formatDatePH = fmtDate; // alias used in Gmail modal
 
 // Parse "11/26" → { dpDate: "2025-11-11", balDate: "2025-11-26" }
 // Logic: first number = DP day of month, second = Balance day of month
