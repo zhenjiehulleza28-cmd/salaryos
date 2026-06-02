@@ -4459,16 +4459,20 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
-  // 1. FORCE SAVE to Supabase before anything else
-  // Cancel any pending debounced save and save immediately
+  // 1. Force save current data — with 3s timeout so button never freezes
   if(_supabaseUser && _supabase){
     clearTimeout(save._timer);
-    try{ await saveToSupabase(); } catch(e){ console.warn('Pre-logout save failed:', e); }
+    try{
+      await Promise.race([
+        saveToSupabase(),
+        new Promise((_,reject) => setTimeout(()=>reject('timeout'), 3000))
+      ]);
+    } catch(e){ console.warn('Pre-logout save:', e); }
   }
 
-  // 2. Sign out from Supabase
+  // 2. Sign out from Supabase — non-blocking, don't await
   try{
-    if(_supabase) await _supabase.auth.signOut({ scope: 'global' });
+    if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
   } catch(e){}
 
   // 3. Clear ALL supabase auth keys from localStorage
@@ -4483,7 +4487,7 @@ async function logoutUser(){
     keysToRemove.forEach(k => localStorage.removeItem(k));
   } catch(e){}
 
-  // 4. Clear app data cache — data is safe in Supabase now
+  // 4. Clear app data cache
   try{
     localStorage.removeItem('sos4');
     localStorage.removeItem('sos4_uid');
