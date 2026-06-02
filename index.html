@@ -4409,7 +4409,8 @@ function initSupabase(){
     auth: {
       detectSessionInUrl: true,
       persistSession: true,
-      autoRefreshToken: true
+      autoRefreshToken: true,
+      storageKey: 'salaryos-auth'
     }
   });
   // Listen for auth changes (e.g. redirect back after OAuth)
@@ -4475,23 +4476,12 @@ async function logoutUser(){
     if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
   } catch(e){}
 
-  // 3. Clear ALL supabase auth keys from localStorage
-  try{
-    const keysToRemove = [];
-    for(let i = 0; i < localStorage.length; i++){
-      const k = localStorage.key(i);
-      if(k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('-auth-token'))) {
-        keysToRemove.push(k);
-      }
-    }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
-  } catch(e){}
-
-  // 4. Clear app data cache
+  // 3. Clear app data cache + specific auth key
   try{
     localStorage.removeItem('sos4');
     localStorage.removeItem('sos4_uid');
     localStorage.removeItem('sos_logged_out');
+    localStorage.removeItem('salaryos-auth'); // our custom storageKey
   } catch(e){}
 
   // 5. Clear session storage
@@ -4509,18 +4499,22 @@ async function logoutUser(){
 
 
 async function saveToSupabase(){
-  if(!_supabase || !_supabaseUser) return;
+  if(!_supabase || !_supabaseUser){ console.warn('[SOS] saveToSupabase skipped — no user/client'); return; }
   try {
-    await _supabase.from('salaryos_data').upsert({
+    console.log('[SOS] Saving to Supabase for user:', _supabaseUser.id);
+    const { error } = await _supabase.from('salaryos_data').upsert({
       user_id: _supabaseUser.id,
       data: JSON.stringify(S),
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
-  } catch(e){ console.warn('Supabase save failed:', e); }
+    if(error){ console.error('[SOS] Supabase save ERROR:', error); }
+    else { console.log('[SOS] Supabase save SUCCESS ✅'); }
+  } catch(e){ console.error('[SOS] Supabase save EXCEPTION:', e); }
 }
 
 async function loadFromSupabase(){
-  if(!_supabase || !_supabaseUser) return;
+  if(!_supabase || !_supabaseUser){ console.warn('[SOS] loadFromSupabase skipped — no user/client'); return; }
+  console.log('[SOS] Loading from Supabase for user:', _supabaseUser.id);
   try {
     const { data, error } = await _supabase
       .from('salaryos_data')
@@ -4528,42 +4522,32 @@ async function loadFromSupabase(){
       .eq('user_id', _supabaseUser.id)
       .single();
 
+    // PGRST116 = no rows found (new user) — not a real error
+    const isNoRows = error?.code === 'PGRST116';
+    if(error && !isNoRows){ console.error('[SOS] Supabase load ERROR:', error); }
+
     if(data?.data){
-      // Found this user's data in Supabase — load it, overwrite localStorage cache
+      console.log('[SOS] Found data in Supabase ✅');
+      // Replace S entirely with the user's saved data
       const imported = JSON.parse(data.data);
       if(imported.years && imported.data){
+        // Full replace — don't merge, replace
+        const theme = S.theme || imported.theme || 'dark';
         Object.assign(S, imported);
-        // Make sure user profile is current session's user
+        S.theme = theme;
         S.user = _userProfile;
       }
       save();
     } else {
-      // New user — no data in Supabase yet, start fresh
-      const currentYear = new Date().getFullYear();
-      S = {
-        years: [currentYear],
-        active: currentYear,
-        theme: S.theme || 'dark',
-        currency: S.currency || 'PHP',
-        data: {},
-        user: _userProfile,
-        customCats: [],
-        clients: [],
-        setupDone: false
-      };
-      S.data[currentYear] = freshYear();
+      // New user or no data yet — keep S as-is (blank fresh state)
+      console.log('[SOS] No data in Supabase yet — fresh start for this user');
+      S.user = _userProfile;
       save();
     }
   } catch(e){
-    console.warn('Supabase load failed:', e);
-    // On network error — still start fresh to avoid showing wrong user's data
-    const currentYear = new Date().getFullYear();
-    if(!S.data || Object.keys(S.data).length === 0){
-      S.data = {};
-      S.data[currentYear] = freshYear();
-      if(!S.years || !S.years.includes(currentYear)) S.years = [currentYear];
-      S.active = currentYear;
-    }
+    console.warn('[SOS] Supabase load exception:', e);
+    // Keep existing S — don't wipe data on network error
+    S.user = _userProfile;
   }
 }
 
