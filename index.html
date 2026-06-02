@@ -4467,6 +4467,7 @@ function initSupabase(){
   // Listen for auth changes (e.g. redirect back after OAuth)
   _supabase.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session?.user){
+      const isNewLogin = !_supabaseUser || _supabaseUser.id !== session.user.id;
       _supabaseUser = session.user;
       const meta = session.user.user_metadata || {};
       _userProfile = {
@@ -4475,18 +4476,21 @@ function initSupabase(){
         email: session.user.email,
         type: 'google'
       };
-      S.user = _userProfile; // ← persist to S so sidebar shows correctly
-      // Try to load user data from Supabase
-      await loadFromSupabase();
-      // Hide welcome, enter app
-      const overlay = document.getElementById('welcome-overlay');
-      if(overlay){
-        overlay.classList.add('fade-out');
-        setTimeout(()=>{ overlay.style.display='none'; }, 600);
-      }
-      updateSidebarProfile();
-      renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
-      updateCurrencySymbols();renderSingilList();computeSingilKPIs();
+      S.user = _userProfile;
+      // Only load from Supabase on actual new login — NOT on token refresh
+      // Token refresh also fires SIGNED_IN and would overwrite unsaved local changes
+      if(isNewLogin){
+        await loadFromSupabase();
+        // Hide welcome, enter app
+        const overlay = document.getElementById('welcome-overlay');
+        if(overlay){
+          overlay.classList.add('fade-out');
+          setTimeout(()=>{ overlay.style.display='none'; }, 600);
+        }
+        updateSidebarProfile();
+        renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
+        updateCurrencySymbols();renderSingilList();computeSingilKPIs();
+      } // end isNewLogin
     }
     if(event === 'SIGNED_OUT'){
       _supabaseUser = null;
