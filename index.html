@@ -1763,7 +1763,8 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   border-color:var(--border)!important;
   transition:background-color 5000s ease-in-out 0s!important;
 }
-</style>
+
+@keyframes spin{to{transform:rotate(360deg)}}</style>
 <script>/* jsPDF v2.5.1 — bundled inline for offline support */
 /** @license
  *
@@ -2143,6 +2144,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<!-- Logout saving overlay -->
+<div id="logout-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="width:48px;height:48px;border:3px solid var(--accent,#00e5cc);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="color:#fff;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.5px;">Saving your data...</div>
+</div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar">
@@ -3113,9 +3119,52 @@ applyTheme();
 // ─── YEAR ───
 function renderYears(){
   const el=document.getElementById('year-list');el.innerHTML='';
-  S.years.forEach(yr=>{const d=document.createElement('div');d.className='year-tab'+(yr===S.active?' active':'');d.innerHTML=`<span>FY ${yr}</span><div class="ydot"></div>`;d.onclick=()=>switchYear(yr);el.appendChild(d);});
+  S.years.forEach(yr=>{
+    const d=document.createElement('div');
+    d.className='year-tab'+(yr===S.active?' active':'');
+    const canDelete = S.years.length > 1;
+    d.innerHTML=`
+      <span>FY ${yr}</span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        ${canDelete ? `<button onclick="event.stopPropagation();qaDeleteYear(${yr})" title="Delete FY ${yr}" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;line-height:1;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.color='#f87171'" onmouseout="this.style.opacity='0.6';this.style.color='var(--muted)'">✕</button>` : ''}
+        <div class="ydot"></div>
+      </div>`;
+    d.onclick=()=>switchYear(yr);
+    el.appendChild(d);
+  });
   document.getElementById('sb-yr').textContent='FY '+S.active;
   document.getElementById('ov-yr-chip').textContent='FY '+S.active;
+}
+
+function qaDeleteYear(yr){
+  if(S.years.length <= 1){ showToast('⚠️ Cannot delete the only fiscal year.','err'); return; }
+  // Custom confirm modal
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px 24px 24px;max-width:300px;width:90%;text-align:center;font-family:'Montserrat',sans-serif;">
+    <div style="font-size:32px;margin-bottom:14px;filter:drop-shadow(0 0 8px var(--accent)) drop-shadow(0 0 14px var(--accent));color:var(--accent);">🗑</div>
+    <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:var(--text);margin-bottom:10px;letter-spacing:0.3px;">Delete FY ${yr}?</div>
+    <div style="font-family:'Montserrat',sans-serif;font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.7;">This will permanently delete all data for <strong style="color:var(--accent);font-weight:700;">FY ${yr}</strong>.<br>This cannot be undone.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--bg4);color:var(--muted);font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:opacity .2s;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">Cancel</button>
+      <button onclick="confirmDeleteYear(${yr});this.closest('[style*=fixed]').remove()" style="flex:1;padding:11px;border-radius:10px;border:none;background:#f87171;color:#fff;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 0 12px rgba(248,113,113,0.4);transition:opacity .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+
+function confirmDeleteYear(yr){
+  // If deleting active year, switch to another first
+  if(yr === S.active){
+    const others = S.years.filter(y => y !== yr);
+    S.active = others[others.length - 1];
+  }
+  S.years = S.years.filter(y => y !== yr);
+  delete S.data[yr];
+  save();
+  renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();compute();
+  showToast('🗑️ FY '+yr+' deleted');
 }
 function switchYear(yr){S.active=yr;if(!S.data[yr])S.data[yr]=freshYear();if(!S.data[yr].vaults)S.data[yr].vaults=JSON.parse(JSON.stringify(DEFAULT_VAULTS));_bizIdx=0;save();renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();compute();renderClientInvoices();computeClientKPIs();if(document.getElementById('page-business')?.classList.contains('active'))buildBizPage();}
 function openYrModal(){document.getElementById('yr-modal').classList.add('open');document.getElementById('yr-input').value='';setTimeout(()=>document.getElementById('yr-input').focus(),50);}
@@ -4460,6 +4509,10 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
+  // Show saving overlay
+  const logoutOvl = document.getElementById('logout-overlay');
+  if(logoutOvl) logoutOvl.style.display='flex';
+
   // 1. Force save current data — with 3s timeout so button never freezes
   if(_supabaseUser && _supabase){
     clearTimeout(save._timer);
@@ -7221,6 +7274,12 @@ function aiHideTyping(){
 
 async function aiRespond(userMsg){
   aiShowTyping();
+  // ── Kaching AI temporarily disabled — API backend not yet configured ──
+  setTimeout(()=>{
+    aiHideTyping();
+    aiAddMsg("Kaching is taking a short break while we set up the backend. Back soon! 🛠️", 'ai');
+  }, 600);
+  return;
   const context=getFinancialContext();
   const systemPrompt=`Ikaw si Kaching — AI assistant sa SalaryOS. Sumasagot sa LAHAT ng tanong.
 
