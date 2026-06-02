@@ -4459,12 +4459,19 @@ async function loginGoogle(){
 }
 
 async function logoutUser(){
-  // 1. Sign out from Supabase first (non-blocking)
+  // 1. FORCE SAVE to Supabase before anything else
+  // Cancel any pending debounced save and save immediately
+  if(_supabaseUser && _supabase){
+    clearTimeout(save._timer);
+    try{ await saveToSupabase(); } catch(e){ console.warn('Pre-logout save failed:', e); }
+  }
+
+  // 2. Sign out from Supabase
   try{
-    if(_supabase) _supabase.auth.signOut({ scope: 'global' }).catch(()=>{});
+    if(_supabase) await _supabase.auth.signOut({ scope: 'global' });
   } catch(e){}
 
-  // 2. Clear ALL supabase auth keys from localStorage
+  // 3. Clear ALL supabase auth keys from localStorage
   try{
     const keysToRemove = [];
     for(let i = 0; i < localStorage.length; i++){
@@ -4476,24 +4483,24 @@ async function logoutUser(){
     keysToRemove.forEach(k => localStorage.removeItem(k));
   } catch(e){}
 
-  // 3. Clear app data cache — user's data stays safe in Supabase
+  // 4. Clear app data cache — data is safe in Supabase now
   try{
     localStorage.removeItem('sos4');
     localStorage.removeItem('sos4_uid');
     localStorage.removeItem('sos_logged_out');
   } catch(e){}
 
-  // 4. Clear session storage
+  // 5. Clear session storage
   try{ sessionStorage.clear(); } catch(e){}
 
-  // 5. Reset in-memory state
+  // 6. Reset in-memory state
   _supabaseUser = null;
   _supabase = null;
   _userProfile = { name:'Guest', avatar:'G', type:'guest' };
   S.user = null;
 
-  // 6. Reload to show login screen fresh
-  setTimeout(()=>{ window.location.reload(true); }, 200);
+  // 7. Reload
+  window.location.reload(true);
 }
 
 
@@ -4563,7 +4570,7 @@ function save(){
   // Debounced sync to Supabase (Google users only)
   if(_supabaseUser){
     clearTimeout(save._timer);
-    save._timer = setTimeout(saveToSupabase, 2000);
+    save._timer = setTimeout(saveToSupabase, 800);
   }
 }
 
