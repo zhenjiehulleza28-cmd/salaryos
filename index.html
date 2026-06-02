@@ -3166,10 +3166,12 @@ function confirmDeleteYear(yr){
   renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();compute();
   showToast('🗑️ FY '+yr+' deleted');
 }
-function switchYear(yr){S.active=yr;if(!S.data[yr])S.data[yr]=freshYear();if(!S.data[yr].vaults)S.data[yr].vaults=JSON.parse(JSON.stringify(DEFAULT_VAULTS));_bizIdx=0;save();renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();compute();renderClientInvoices();computeClientKPIs();if(document.getElementById('page-business')?.classList.contains('active'))buildBizPage();}
+function switchYear(yr){S.active=yr;if(!S.data[yr])S.data[yr]=freshYear();if(!S.data[yr].vaults)S.data[yr].vaults=JSON.parse(JSON.stringify(DEFAULT_VAULTS));_bizIdx=0;save();// Immediately sync to Supabase on year switch
+if(_supabaseUser&&_supabase){clearTimeout(save._timer);save._timer=setTimeout(saveToSupabase,300);}renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();compute();renderClientInvoices();computeClientKPIs();if(document.getElementById('page-business')?.classList.contains('active'))buildBizPage();}
 function openYrModal(){document.getElementById('yr-modal').classList.add('open');document.getElementById('yr-input').value='';setTimeout(()=>document.getElementById('yr-input').focus(),50);}
 function closeYrModal(){animatedModalClose('yr-modal');}
-function confirmYear(){const yr=parseInt(document.getElementById('yr-input').value);if(!yr||yr<2020||yr>2099)return;if(!S.years.includes(yr)){S.years.push(yr);S.years.sort();}closeYrModal();switchYear(yr);}
+function confirmYear(){const yr=parseInt(document.getElementById('yr-input').value);if(!yr||yr<2020||yr>2099)return;if(!S.years.includes(yr)){S.years.push(yr);S.years.sort();}closeYrModal();switchYear(yr);// Force immediate Supabase save after adding new year
+if(_supabaseUser&&_supabase){clearTimeout(save._timer);setTimeout(saveToSupabase,300);}}
 document.getElementById('yr-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmYear();if(e.key==='Escape')closeYrModal();});
 document.getElementById('yr-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeYrModal();});
 
@@ -4554,14 +4556,14 @@ async function logoutUser(){
 async function saveToSupabase(){
   if(!_supabase || !_supabaseUser){ console.warn('[SOS] saveToSupabase skipped — no user/client'); return; }
   try {
-    console.log('[SOS] Saving to Supabase for user:', _supabaseUser.id);
+    console.log('[SOS] Saving to Supabase — years:', S.years);
     const { error } = await _supabase.from('salaryos_data').upsert({
       user_id: _supabaseUser.id,
       data: JSON.stringify(S),
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
     if(error){ console.error('[SOS] Supabase save ERROR:', error); }
-    else { console.log('[SOS] Supabase save SUCCESS ✅'); }
+    else { console.log('[SOS] Supabase save SUCCESS ✅ years:', S.years); }
   } catch(e){ console.error('[SOS] Supabase save EXCEPTION:', e); }
 }
 
@@ -4581,11 +4583,10 @@ async function loadFromSupabase(){
 
     if(data?.data){
       console.log('[SOS] Found data in Supabase ✅');
-      // Replace S entirely with the user's saved data
       const imported = JSON.parse(data.data);
       if(imported.years && imported.data){
-        // Full replace — don't merge, replace
-        const theme = S.theme || imported.theme || 'dark';
+        // Supabase is source of truth — full replace
+        const theme = imported.theme || S.theme || 'dark';
         Object.assign(S, imported);
         S.theme = theme;
         S.user = _userProfile;
@@ -4611,7 +4612,7 @@ function save(){
   // Debounced sync to Supabase (Google users only)
   if(_supabaseUser){
     clearTimeout(save._timer);
-    save._timer = setTimeout(saveToSupabase, 800);
+    save._timer = setTimeout(saveToSupabase, 200);
   }
 }
 
