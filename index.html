@@ -4452,6 +4452,7 @@ const SUPABASE_URL = 'https://feqltpzqisclvgzfmoqs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcWx0cHpxaXNjbHZnemZtb3FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDYyNDQsImV4cCI6MjA5NTcyMjI0NH0.6vtnOD0uMik3mzvBvNLx6Kw68Tb6apNDNa_5octwq1E';
 let _supabase = null;
 let _supabaseUser = null;
+let _dataLoaded = false; // prevents loadFromSupabase from firing on token refresh
 
 function initSupabase(){
   if(!window.supabase) return null;
@@ -4467,7 +4468,6 @@ function initSupabase(){
   // Listen for auth changes (e.g. redirect back after OAuth)
   _supabase.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session?.user){
-      const isNewLogin = !_supabaseUser || _supabaseUser.id !== session.user.id;
       _supabaseUser = session.user;
       const meta = session.user.user_metadata || {};
       _userProfile = {
@@ -4479,7 +4479,7 @@ function initSupabase(){
       S.user = _userProfile;
       // Only load from Supabase on actual new login — NOT on token refresh
       // Token refresh also fires SIGNED_IN and would overwrite unsaved local changes
-      if(isNewLogin){
+      if(!_dataLoaded){
         await loadFromSupabase();
         // Hide welcome, enter app
         const overlay = document.getElementById('welcome-overlay');
@@ -4549,6 +4549,7 @@ async function logoutUser(){
   // 6. Reset in-memory state
   _supabaseUser = null;
   _supabase = null;
+  _dataLoaded = false;
   _userProfile = { name:'Guest', avatar:'G', type:'guest' };
   S.user = null;
 
@@ -4595,12 +4596,16 @@ async function loadFromSupabase(){
         S.theme = theme;
         S.user = _userProfile;
       }
-      save();
+      _dataLoaded = true;
+      // Update localStorage cache without triggering Supabase sync
+      try{ localStorage.setItem('sos4', JSON.stringify(S)); } catch(e){}
     } else {
       // New user or no data yet — keep S as-is (blank fresh state)
       console.log('[SOS] No data in Supabase yet — fresh start for this user');
       S.user = _userProfile;
-      save();
+      _dataLoaded = true;
+      // Update localStorage cache without triggering Supabase sync
+      try{ localStorage.setItem('sos4', JSON.stringify(S)); } catch(e){}
     }
   } catch(e){
     console.warn('[SOS] Supabase load exception:', e);
