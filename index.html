@@ -41,7 +41,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 }
 
 /* ── SIDEBAR ── */
-.sidebar{width:242px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;transition:background .3s,transform .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow);;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.sidebar{width:242px;min-height:100vh;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:9050;overflow-y:auto;transition:background .3s,transform .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow);;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
 .logo-wrap{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
 .logo-mark{display:flex;align-items:center;gap:10px;}
 .logo-icon-wrap{width:34px;height:34px;flex-shrink:0;}
@@ -1774,9 +1774,13 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   /* Show hamburger */
   .mob-menu-btn { display: flex !important; }
 
-  /* Topbar breathing room */
-  .topbar { padding: 11px 16px; }
+  /* Topbar — clean on mobile */
+  .topbar { padding: 9px 12px; gap: 6px; }
   #live-clock { display: none; }
+  #live-clock-badge { display: none; }
+  .live-badge { display: none; }
+  .notif-btn { width: 32px; height: 32px; }
+  .tb-sub { display: none; }
 
   /* Page padding */
   .page { padding: 18px 16px 100px !important; }
@@ -2063,9 +2067,13 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
 .tour-btn-next:active { transform: scale(.97); }
 
 /* Block all app interaction during tour */
-body.tour-active .main,
-body.tour-active .sidebar {
+body.tour-active .main {
   pointer-events: none !important;
+}
+body.tour-active #mob-menu-btn {
+  pointer-events: all !important;
+  position: relative;
+  z-index: 9010;
 }
 body.tour-active #tour-tooltip,
 body.tour-active #tour-overlay-top,
