@@ -504,7 +504,7 @@ canvas{display:block;}
 [data-theme="light"] .modal{background:var(--bg2);}
 [data-theme="light"] .modal-inp{background:var(--bg4);color:var(--text);}
 [data-theme="light"] .bank-option{background:var(--bg4);}
-[data-theme="light"] .exp-cat-select,[data-theme="light"] .exp-log-inp,[data-theme="light"] .ws-setup-sel{color:var(--text);}
+[data-theme="light"] .exp-cat-select,[data-theme="light"] .exp-log-inp,[data-theme="light"] .ws-setup-sel{color:var(--text);border-radius:12px;transition:.2s;}
 [data-theme="light"] .fab-item{background:var(--bg2);box-shadow:0 4px 16px rgba(80,60,40,.12);}
 [data-theme="light"] #toast{background:var(--bg2);border-color:rgba(0,196,212,.22);}
 
@@ -635,7 +635,7 @@ canvas{display:block;}
 .biz-add-row{display:flex;flex-direction:column;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
 .biz-inp{background:transparent;border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;color:var(--text);width:100%;border-bottom:1px solid var(--border2);padding-bottom:6px;}
 .biz-inp::placeholder{color:var(--muted);font-weight:400;font-size:11px;}
-.biz-cat-sel{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:6px 8px;font-family:'Montserrat',sans-serif;font-size:10.5px;font-weight:600;color:var(--text2);outline:none;cursor:pointer;flex:1;}
+.biz-cat-sel{background:var(--bg4);border:1px solid var(--border2);border-radius:10px;padding:7px 10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;color:var(--text);outline:none;cursor:pointer;flex:1;transition:.2s;}
 .biz-amt-wrap{display:flex;align-items:center;gap:4px;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;flex:1;}
 .biz-amt-pre{font-size:11px;font-weight:700;flex-shrink:0;}
 .biz-amt-inp{background:transparent;border:none;outline:none;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text);width:100%;-moz-appearance:textfield;}
@@ -676,40 +676,8 @@ canvas{display:block;}
 
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){
-  .sidebar{transform:translateX(-224px);transition:transform .3s cubic-bezier(.4,0,.2,1);}
-  .sidebar.mob-open{transform:translateX(0);}
-  .main{margin-left:0!important;width:100vw!important;max-width:100vw!important;}
-  .mob-menu-btn{display:flex;}
-  .kpi-row{grid-template-columns:repeat(2,1fr)!important;}
-  .grid-2,.ov-row{grid-template-columns:1fr!important;}
-  .vault-grid{grid-template-columns:1fr!important;}
-  .exp-cat-grid{grid-template-columns:1fr 1fr!important;}
-  .goal-grid{grid-template-columns:1fr 1fr!important;}
-  .sum-grid{grid-template-columns:1fr 1fr!important;}
-  .vault-totals{grid-template-columns:1fr 1fr!important;}
-  .health-score-wrap{flex-direction:column;gap:20px;}
-  .health-factors{grid-template-columns:1fr 1fr;}
-  .nw-add-row{grid-template-columns:1fr;}
-  .budget-item{grid-template-columns:120px 1fr 1fr 60px;gap:8px;}
-  .exp-log-add{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}
-  .exp-log-add .exp-add-btn{grid-column:span 2;}
-  .page{padding:14px 16px!important;}
-  .topbar{padding:12px 16px;}
-  .fab-wrap{bottom:24px;right:16px;}
-  .welcome-card{width:calc(100vw - 28px);padding:28px 20px;}
-  .alloc-table{font-size:11px;}
-  .alloc-table td,.alloc-table th{padding:6px 6px;}
-}
-@media(max-width:480px){
-  .kpi-row{grid-template-columns:1fr 1fr!important;}
-  .sum-grid,.goal-grid{grid-template-columns:1fr!important;}
-  .exp-cat-grid{grid-template-columns:1fr!important;}
-  .budget-item{grid-template-columns:1fr;gap:6px;}
-  .hero-h1{font-size:24px;}
-  .hero-stats{gap:14px;}
-  .hstat-val{font-size:18px;}
-}
+
+
 
 /* ════════════════════════════════════════
    ✦ NEW FEATURES CSS
@@ -859,7 +827,36 @@ canvas{display:block;}
 .cl-inp.cl-inp-amt::-webkit-inner-spin-button{display:none;}
 .cl-inp.cl-inp-due{border-color:rgba(251,146,60,.3);}
 .cl-inp.cl-inp-due:focus{border-color:var(--amber);}
-.cl-select{cursor:pointer;}
+.cl-/* ── CUSTOM SELECT DROPDOWNS ── */
+select {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8fa6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px !important;
+  transition: border-color .2s, box-shadow .2s, background-color .2s;
+}
+select:hover {
+  border-color: rgba(0,229,204,.4) !important;
+  background-color: var(--bg3) !important;
+}
+select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(0,229,204,.12) !important;
+  background-color: var(--bg3) !important;
+}
+select option {
+  background: var(--bg2, #1a2332);
+  color: var(--text, #e8f0f7);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 12px;
+}
 .cl-add-btn{padding:9px 22px;border-radius:10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(0,213,230,.35);background:rgba(0,213,230,.12);color:#00D5E6;transition:.18s;letter-spacing:.5px;}
 .cl-add-btn:hover{background:rgba(0,213,230,.22);border-color:#00D5E6;box-shadow:0 0 16px rgba(0,213,230,.2);}
 /* Filter tabs */
@@ -965,34 +962,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{
 .nav-btn,.year-tab,.fab-item,.ws-btn-primary,.btn{transition:all .2s cubic-bezier(.4,0,.2,1);}
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){
-  .sidebar{width:64px;}
-  .sidebar .logo-tagline,.sidebar .logo-word-bot,.sidebar .sb-lbl,.nav-btn span,.year-tab span,.sb-section .add-yr span,.sidebar .sb-foot .ip-val,.sidebar .sb-foot .ip-yr,.sidebar .sb-foot .ip-label{display:none;}
-  .logo-wordmark{display:none;}
-  .nav-btn{justify-content:center;padding:10px 0;}
-  .nb-icon{margin:0;}
-  .year-tab{justify-content:center;padding:8px 0;}
-  .ydot{display:none;}
-  .add-yr{justify-content:center;}
-  .add-yr svg{margin:0;}
-  .main{margin-left:64px;}
-  .topbar{padding:12px 16px;}
-  .content,.page{padding:14px 16px;}
-  #ai-chat{left:80px;width:calc(100vw - 100px);bottom:80px;}
-  #ai-fab{display:none !important;}
-  .kpi-row{grid-template-columns:1fr 1fr !important;}
-  .row-2,.ov-row,.row-2{grid-template-columns:1fr !important;}
-  .vault-grid{grid-template-columns:1fr !important;}
-  .exp-cat-grid{grid-template-columns:1fr 1fr !important;}
-  .goal-grid{grid-template-columns:1fr 1fr !important;}
-  .sum-grid{grid-template-columns:1fr 1fr !important;}
-  .budget-item{grid-template-columns:1fr 1fr !important;grid-template-rows:auto auto;}
-}
-@media(max-width:600px){
-  .kpi-row{grid-template-columns:1fr !important;}
-  .sum-grid,.exp-cat-grid,.goal-grid{grid-template-columns:1fr !important;}
-  .welcome-card{width:calc(100vw - 32px);padding:28px 20px;}
-}
+
+
 
 
 /* ══════════════════════════════════════
@@ -1345,7 +1316,7 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
 .exp-log-item-del{width:18px;height:18px;border-radius:5px;border:1px solid var(--border2);background:var(--bg4);color:var(--muted);font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;}
 .exp-log-item-del:hover{background:rgba(241,87,87,.1);border-color:rgba(241,87,87,.3);color:var(--red);}
 .exp-log-empty{font-size:10px;color:var(--muted);text-align:center;padding:16px 0;}
-.exp-cat-select{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;color:var(--text);outline:none;cursor:pointer;width:100%;transition:.15s;}
+.exp-cat-select{background:var(--bg4);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:600;color:var(--text);outline:none;cursor:pointer;width:100%;transition:.2s;}
 .exp-cat-select:focus{border-color:#00D5E6;}
 
 
@@ -1703,15 +1674,8 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
 .cst-card-done{opacity:.6;border-style:dashed!important;}
 .cst-card-done:hover{opacity:.85;}
 /* Mobile responsive for client cards */
-@media(max-width:900px){
-  .cst-card{grid-template-columns:1fr 1fr!important;grid-template-rows:auto auto auto;}
-  .cst-thead{display:none!important;}
-  .cst-card>div:nth-child(5){grid-column:span 2;}
-}
-@media(max-width:480px){
-  .cst-card{grid-template-columns:1fr!important;}
-  .cst-card>div:nth-child(5){grid-column:span 1;}
-}
+
+
 
 /* ── ADD/EDIT CLIENT MODAL FIELDS ── */
 .cst-modal-fields{display:flex;flex-direction:column;gap:16px;}
@@ -1764,7 +1728,377 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   transition:background-color 5000s ease-in-out 0s!important;
 }
 
-@keyframes spin{to{transform:rotate(360deg)}}</style>
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ══════════════════════════════════════════════════
+   SALARYOS — MOBILE RESPONSIVE
+   Philosophy: sidebar slides off, content fills screen,
+   salary rows reflow gracefully, modals go full-width,
+   spacing is generous on touch targets
+   ══════════════════════════════════════════════════ */
+
+/* ── BASE: hide hamburger on desktop ── */
+.mob-menu-btn { display: none; }
+.mob-overlay  { display: none; }
+
+/* ════════════════
+   TABLET: ≤ 900px
+   ════════════════ */
+@media (max-width: 900px) {
+
+  /* Sidebar slides off-screen, hamburger appears */
+  .sidebar {
+    transform: translateX(-242px);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 400;
+  }
+  .sidebar.mob-open { transform: translateX(0); }
+  .mob-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 399;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .28s;
+  }
+  .mob-overlay.open { opacity: 1; pointer-events: all; }
+
+  /* Main content fills full width */
+  .main {
+    margin-left: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  /* Show hamburger */
+  .mob-menu-btn { display: flex !important; }
+
+  /* Topbar breathing room */
+  .topbar { padding: 11px 16px; }
+  #live-clock { display: none; }
+
+  /* Page padding */
+  .page { padding: 18px 16px 100px !important; }
+
+  /* ── KPI / Summary cards ── */
+  .kpi-row           { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .sum-grid          { grid-template-columns: 1fr 1fr !important; }
+  .grid-2, .ov-row   { grid-template-columns: 1fr !important; }
+
+  /* ── Vault ── */
+  .vault-grid        { grid-template-columns: 1fr 1fr !important; }
+  .vault-totals      { grid-template-columns: 1fr 1fr !important; }
+  .vc-grid           { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+  /* ── Goals ── */
+  .goal-grid         { grid-template-columns: 1fr 1fr !important; }
+  .goal-card         { padding: 14px !important; }
+
+  /* ── Expenses ── */
+  .exp-cat-grid      { grid-template-columns: 1fr 1fr !important; }
+  .exp-log-add       { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+  .exp-log-add .exp-add-btn { grid-column: span 2; }
+
+  /* ── Budget ── */
+  .budget-item       { grid-template-columns: 120px 1fr 1fr 60px; gap: 8px; }
+
+  /* ── Net worth ── */
+  .nw-add-row        { grid-template-columns: 1fr; }
+
+  /* ── Salary tracker rows — reflow to flex ── */
+  .irow {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px 12px !important;
+    gap: 4px 10px;
+    height: auto !important;
+    min-height: unset !important;
+    max-height: unset !important;
+  }
+  .irow > div:nth-child(1) { display: none; }            /* # col */
+  .irow > div:nth-child(2) { flex: 0 0 56px; }           /* month */
+  .irow > div:nth-child(3) { flex: 1 1 140px; }          /* salary */
+  .irow > div:nth-child(4) { flex: 0 0 90px; font-size: 11px; color: var(--muted); } /* diff */
+  .irow > div:nth-child(5) { flex: 0 0 70px; font-size: 11px; color: var(--muted); } /* mom% */
+  .irow > div:nth-child(6) { flex: 0 0 60px; font-size: 11px; }  /* trend */
+  .irow > div:nth-child(7) { flex: 1 1 100%; font-size: 11px; margin-top: 2px; } /* notes */
+
+  /* ── Salary table header ── */
+  .salary-header > div:nth-child(1),
+  .salary-header > div:nth-child(4),
+  .salary-header > div:nth-child(5),
+  .salary-header > div:nth-child(6) { display: none !important; }
+
+  /* ── Health score ── */
+  .health-score-wrap  { flex-direction: column; gap: 20px; }
+  .health-factors     { grid-template-columns: 1fr 1fr; }
+
+  /* ── Alloc table ── */
+  .alloc-table        { font-size: 11px; }
+  .alloc-table td, .alloc-table th { padding: 6px; }
+
+  /* ── Clients / Singil ── */
+  .cst-thead          { display: none !important; }
+  .cst-card           { grid-template-columns: 1fr 1fr !important; padding: 12px !important; }
+  .cst-card > div:nth-child(5) { grid-column: span 2; }
+
+  /* ── Quick look panel — too wide for tablet ── */
+  .ql-panel           { min-width: 0; width: 100% !important; }
+
+  /* ── Modals ── */
+  [id$="-modal"] > div,
+  .modal-card,
+  .cst-modal-inner,
+  .qa-modal-inner {
+    width: calc(100vw - 28px) !important;
+    max-width: 100% !important;
+    padding: 22px 18px !important;
+    border-radius: 16px !important;
+    margin: 0 auto;
+  }
+
+  /* ── Welcome card ── */
+  .welcome-card { width: calc(100vw - 28px); padding: 28px 20px; }
+
+  /* ── FAB ── */
+  .fab-wrap { bottom: 24px !important; right: 16px !important; }
+
+  /* ── Business tracker ── */
+  .biz-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ════════════════
+   PHONE: ≤ 480px
+   ════════════════ */
+@media (max-width: 480px) {
+
+  /* Topbar tighter */
+  .topbar { padding: 9px 12px; }
+  .tb-left .tb-title { font-size: 17px !important; }
+  .tb-left .tb-sub   { display: none; }
+  .topbar-right      { gap: 6px; }
+
+  /* Page padding + bottom room for FAB */
+  .page { padding: 14px 12px 100px !important; }
+
+  /* ── KPI cards ── */
+  .kpi-row  { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .kpi-card { padding: 12px 10px !important; }
+  .kpi-val  { font-size: 17px !important; }
+  .kpi-label { font-size: 9px !important; }
+
+  /* ── Overview hero ── */
+  .hero-h1   { font-size: 24px !important; }
+  .hero-h2   { font-size: 20px !important; }
+  .hero-sub  { font-size: 12px !important; }
+  .hero-stats { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .hstat-val  { font-size: 18px !important; }
+  .hstat-lbl  { font-size: 9px !important; }
+
+  /* ── Summary / vault ── */
+  .sum-grid   { grid-template-columns: 1fr 1fr !important; }
+  .vault-grid { grid-template-columns: 1fr 1fr !important; }
+  .goal-grid  { grid-template-columns: 1fr !important; }
+
+  /* ── Salary tracker — phone view ── */
+  .irow > div:nth-child(4),
+  .irow > div:nth-child(5),
+  .irow > div:nth-child(6) { display: none !important; } /* hide diff/mom/trend */
+  .irow > div:nth-child(7) { display: none !important; } /* hide notes */
+  .irow > div:nth-child(2) { flex: 0 0 50px; font-size: 12px; }
+  .irow > div:nth-child(3) { flex: 1 1 auto; }
+
+  /* ── Budget ── */
+  .budget-item { grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  /* ── Expense categories ── */
+  .exp-cat-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── Modals full-width ── */
+  [id$="-modal"] > div,
+  .modal-card,
+  .cst-modal-inner,
+  .qa-modal-inner {
+    width: calc(100vw - 16px) !important;
+    padding: 18px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  /* ── Clients ── */
+  .cst-card { grid-template-columns: 1fr !important; }
+  .cst-card > div:nth-child(5) { grid-column: span 1; }
+
+  /* ── Year tabs ── */
+  .year-tab  { font-size: 11px !important; padding: 6px 8px !important; }
+  #year-list { gap: 4px !important; }
+
+  /* ── FAB position ── */
+  .fab-wrap  { bottom: 20px !important; right: 14px !important; }
+
+  /* ── Kaching chat ── */
+  .kaching-chat-win {
+    width: calc(100vw - 16px) !important;
+    right: 8px !important;
+    bottom: 70px !important;
+    max-height: 70vh !important;
+  }
+}
+
+/* ════════════════════════════════
+   SALARYOS GUIDED TOUR
+   ════════════════════════════════ */
+/* Tour overlay — 4 panels that dim everything EXCEPT the spotlight */
+#tour-overlay-top, #tour-overlay-bottom,
+#tour-overlay-left, #tour-overlay-right {
+  position: fixed;
+  z-index: 9000;
+  background: rgba(0,0,0,0.72);
+  pointer-events: all;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+}
+#tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8999;
+  pointer-events: all;
+  background: rgba(0,0,0,0.72);
+  transition: opacity .3s;
+}
+#tour-spotlight {
+  position: fixed;
+  z-index: 9001;
+  border-radius: 12px;
+  border: 2px solid var(--accent, #00e5cc);
+  box-shadow: 0 0 0 3px rgba(0,229,204,0.15), 0 0 20px rgba(0,229,204,0.3);
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+  background: transparent;
+}
+#tour-tooltip {
+  position: fixed;
+  z-index: 9002;
+  background: #0d1520;
+  border: 1px solid rgba(0,229,204,.25);
+  border-radius: 16px;
+  padding: 18px 18px 14px;
+  width: 272px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(0,229,204,.08);
+  font-family: 'Montserrat', sans-serif;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  pointer-events: all;
+}
+.tour-step-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #00e5cc;
+  margin-bottom: 6px;
+}
+.tour-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.tour-desc {
+  font-size: 12px;
+  color: #c8d8e8;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.tour-dots {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.tour-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border, rgba(86,106,130,.3));
+  transition: .2s;
+}
+.tour-dot.active {
+  background: var(--accent, #00e5cc);
+  width: 18px;
+  border-radius: 3px;
+}
+.tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tour-btn-skip {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted, #7a8fa6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: 'Montserrat', sans-serif;
+  transition: .15s;
+}
+.tour-btn-skip:hover { color: var(--text, #e8f0f7); }
+.tour-btn-next {
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  background: var(--accent, #00e5cc);
+  border: none;
+  cursor: pointer;
+  padding: 9px 20px;
+  border-radius: 10px;
+  font-family: 'Montserrat', sans-serif;
+  transition: .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tour-btn-next:hover { opacity: .85; }
+.tour-btn-next:active { transform: scale(.97); }
+
+/* Block all app interaction during tour */
+body.tour-active .main,
+body.tour-active .sidebar {
+  pointer-events: none !important;
+}
+body.tour-active #tour-tooltip,
+body.tour-active #tour-overlay-top,
+body.tour-active #tour-overlay-bottom,
+body.tour-active #tour-overlay-left,
+body.tour-active #tour-overlay-right {
+  pointer-events: all !important;
+}
+
+/* ? help button */
+#tour-help-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .15s;
+  flex-shrink: 0;
+}
+#tour-help-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,229,204,.08);
+}
+</style>
 <script>/* jsPDF v2.5.1 — bundled inline for offline support */
 /** @license
  *
@@ -2144,6 +2478,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<!-- ── GUIDED TOUR ── -->
+<div id="tour-overlay" style="display:none;"></div>
+<div id="tour-overlay-top" style="display:none;"></div>
+<div id="tour-overlay-bottom" style="display:none;"></div>
+<div id="tour-overlay-left" style="display:none;"></div>
+<div id="tour-overlay-right" style="display:none;"></div>
+<div id="tour-spotlight" style="display:none;"></div>
+<div id="tour-tooltip" style="display:none;">
+  <div class="tour-step-label" id="tour-step-label">Step 1 of 6</div>
+  <div class="tour-title" id="tour-title">Welcome to SalaryOS!</div>
+  <div class="tour-desc" id="tour-desc">Your personal financial OS. Let's take a quick tour.</div>
+  <div class="tour-dots" id="tour-dots"></div>
+  <div class="tour-actions">
+    <button class="tour-btn-skip" onclick="tourSkip()">Skip tour</button>
+    <button class="tour-btn-next" onclick="tourNext()" id="tour-next-btn">
+      Next <span>→</span>
+    </button>
+  </div>
+</div>
+
 <!-- Logout saving overlay -->
 <div id="logout-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;gap:16px;">
   <div style="width:48px;height:48px;border:3px solid var(--accent,#00e5cc);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
@@ -2182,7 +2536,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <div class="sb-lbl" style="margin-bottom:8px;">Pages</div>
     <div class="nav-btn active" id="nb-overview" onclick="goPage('overview',this)">
       <div class="nb-icon" style="background:rgba(0,213,230,.1);">
-        <svg class="nbi nbi-overview" viewBox="0 0 24 24" fill="none" stroke="#00D5E6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="nbi nbi-overview" viewBox="0 0 24 24" fill="none" stroke="#00B8A9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <rect class="nbi-tl" x="3" y="3" width="7" height="7" rx="1.5"/>
   <rect class="nbi-tr" x="14" y="3" width="7" height="7" rx="1.5"/>
   <rect class="nbi-bl" x="3" y="14" width="7" height="7" rx="1.5"/>
@@ -2264,7 +2618,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 </svg>
       </div>Business Tracker</div>
     <div class="sb-lbl" style="margin-top:10px;margin-bottom:4px;">Actions</div>
-    <div class="nav-btn" onclick="openExportModal()">
+    <div class="nav-btn" id="nb-export" onclick="openExportModal()">
       <div class="nb-icon" style="background:rgba(248,113,113,.1);">
         <svg class="nbi nbi-download" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -2283,7 +2637,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     </div>
 
     <!-- Kaching AI Button -->
-    <button onclick="toggleAiChat()" style="width:100%;margin-top:8px;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:11px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(250,204,21,.07));border:1px solid rgba(245,158,11,.3);cursor:pointer;transition:.18s;position:relative;" onmouseover="this.style.borderColor='rgba(245,158,11,.6)';this.style.background='linear-gradient(135deg,rgba(245,158,11,.2),rgba(250,204,21,.12))'" onmouseout="this.style.borderColor='rgba(245,158,11,.3)';this.style.background='linear-gradient(135deg,rgba(245,158,11,.12),rgba(250,204,21,.07))'">
+    <button id="kaching-toggle-btn" onclick="toggleAiChat()" style="width:100%;margin-top:8px;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:11px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(250,204,21,.07));border:1px solid rgba(245,158,11,.3);cursor:pointer;transition:.18s;position:relative;" onmouseover="this.style.borderColor='rgba(245,158,11,.6)';this.style.background='linear-gradient(135deg,rgba(245,158,11,.2),rgba(250,204,21,.12))'" onmouseout="this.style.borderColor='rgba(245,158,11,.3)';this.style.background='linear-gradient(135deg,rgba(245,158,11,.12),rgba(250,204,21,.07))'">
       <!-- Mini chibi face -->
       <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid rgba(217,119,6,.4);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
         <svg viewBox="0 0 30 30" fill="none" style="width:30px;height:30px;">
@@ -2324,6 +2678,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <div id="sb-user-name" style="font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Guest</div>
         <div id="sb-user-type" style="font-size:10px;color:var(--muted);">● Guest Mode</div>
       </div>
+      <button id="tour-help-btn" onclick="startTour()" title="Take a tour">?</button>
       <button id="sb-auth-btn" onclick="handleSidebarAuth()" title="Sign in / Sign out" style="width:24px;height:24px;border-radius:7px;border:1px solid var(--border);background:var(--bg5);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;" onmouseover="this.style.color='#00D5E6';this.style.borderColor='rgba(0,213,230,.3)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
@@ -2353,7 +2708,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span id="live-clock">—</span>
       </div>
-      <div class="theme-icon" onclick="toggleTheme()"><span id="theme-emoji">🌙</span><div class="theme-toggle"></div></div>
+      <div class="theme-icon" id="theme-icon-btn" onclick="toggleTheme()"><span id="theme-emoji">🌙</span><div class="theme-toggle"></div></div>
     </div>
   </div>
 
@@ -2482,7 +2837,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <span class="ph-chip" style="background:rgba(251,146,60,.1);color:var(--amber);" id="exp-log-count">0 entries</span>
         </div>
         <!-- Add entry row -->
-        <div class="exp-log-add">
+        <div class="exp-log-add" id="exp-log-add-form">
           <select class="exp-cat-select" id="exp-log-cat"></select>
           <input type="text" class="exp-log-inp" id="exp-log-desc" placeholder="Description (e.g. Jollibee, Grab…)">
           <div class="exp-log-inp-amt"><span class="exp-log-pre">₱</span><input type="text" inputmode="decimal" class="exp-log-amt" id="exp-log-amt" placeholder="0.00" oninput="this.value=this.value.replace(/[^0-9.]/g,'');if((this.value.match(/\./g)||[]).length>1)this.value=this.value.slice(0,-1);" onkeypress="return /[0-9.]/.test(event.key)"></div>
@@ -2546,7 +2901,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         <div id="nw-assets-list"></div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border2);">
           <div class="ph-lbl" style="margin-bottom:10px;">Add Other Asset</div>
-          <div class="nw-add-row">
+          <div class="nw-add-row" id="nw-add-row">
             <input type="text" class="nw-inp-text" id="nw-asset-name" placeholder="e.g. Laptop, Car...">
             <div style="display:flex;align-items:center;gap:4px;flex:1;"><span class="nw-pre">₱</span><input type="text" inputmode="decimal" class="nw-inp-num" id="nw-asset-val" placeholder="0.00"></div>
             <button class="nw-add-btn" onclick="addAsset()" style="background:rgba(52,211,153,.15);color:var(--green);border-color:rgba(52,211,153,.3);">+ Add</button>
@@ -2819,7 +3174,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 </div>
 
 <!-- ═══ FLOATING ADD BUTTON ═══ -->
-<div class="fab-wrap">
+<div class="fab-wrap" id="fab-wrap">
   <div class="fab-menu" id="fab-menu">
     <div class="fab-item" onclick="openQuickAdd('expense')">
       <div class="fab-item-icon">
@@ -3006,34 +3361,34 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 <script>
 // ─── BANK PRESETS ───
 const BANK_PRESETS=[
-  {name:'GoTyme Bank',   color:'#00D5E6',type:'Digital',
+  {name:'GoTyme Bank',   color:'#00B8A9',type:'Digital',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#00D5E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M17 12h-5v5"/><path d="M17 12a5 5 0 1 1-5-5"/></svg>`},
-  {name:'Maya',          color:'#00E58F',type:'Digital',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#00E58F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-6-8-13a8 8 0 0 1 16 0c0 7-8 13-8 13z"/><circle cx="12" cy="9" r="2.5" fill="#00E58F" stroke="none"/></svg>`},
+  {name:'Maya',          color:'#00D17D',type:'Digital',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#00D17D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-6-8-13a8 8 0 0 1 16 0c0 7-8 13-8 13z"/><circle cx="12" cy="9" r="2.5" fill="#00D17D" stroke="none"/></svg>`},
   {name:'CIMB Bank PH',  color:'#ED1C24',type:'Digital',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`},
   {name:'GCash',         color:'#007DFF',type:'E-Wallet',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#007DFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="#007DFF" stroke="none"/><line x1="9" y1="7" x2="15" y2="7"/></svg>`},
-  {name:'BPI',           color:'#C8102E',type:'Traditional',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18M3 10h18M5 6l7-3 7 3M4 10v12M20 10v12M9 10v12M15 10v12"/></svg>`},
-  {name:'BDO',           color:'#003087',type:'Traditional',
+  {name:'BPI',           color:'#B11116',type:'Traditional',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#B11116" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18M3 10h18M5 6l7-3 7 3M4 10v12M20 10v12M9 10v12M15 10v12"/></svg>`},
+  {name:'BDO',           color:'#0033A0',type:'Traditional',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#3a7fd5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18M3 10h18M5 6l7-3 7 3M4 10v12M20 10v12M9 10v12M15 10v12"/></svg>`},
-  {name:'UnionBank',     color:'#F36F21',type:'Traditional',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#F36F21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`},
-  {name:'Security Bank', color:'#1F3B73',type:'Traditional',
+  {name:'UnionBank',     color:'#F58220',type:'Traditional',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#F58220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`},
+  {name:'Security Bank', color:'#005BAC',type:'Traditional',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#6b8fc7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`},
   {name:'Metrobank',     color:'#005BAC',type:'Traditional',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#4a9de0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`},
-  {name:'Tonik',         color:'#7C3AED',type:'Digital',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`},
-  {name:'MariBank',      color:'#00AEEF',type:'Digital',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#00AEEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M2 17c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>`},
-  {name:'Landbank',      color:'#7AB800',type:'Government',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#7AB800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22 L22 2 S22 22 2 22Z"/><path d="M2 22c5-8 12-12 20-20"/><circle cx="12" cy="12" r="2" fill="#7AB800" stroke="none"/></svg>`},
+  {name:'Tonik',         color:'#7B3FF2',type:'Digital',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#7B3FF2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`},
+  {name:'MariBank',      color:'#FF9933',type:'Digital',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#FF9933" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M2 17c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>`},
+  {name:'Landbank',      color:'#6AA84F',type:'Government',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#6AA84F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22 L22 2 S22 22 2 22Z"/><path d="M2 22c5-8 12-12 20-20"/><circle cx="12" cy="12" r="2" fill="#7AB800" stroke="none"/></svg>`},
   {name:'Wise PH',       color:'#9FE870',type:'Digital',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#9FE870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>`},
-  {name:'Salmon',        color:'#FF7F50',type:'Digital',
-   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#FF7F50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/><circle cx="9" cy="10" r="1" fill="#FF7F50" stroke="none"/></svg>`},
+  {name:'Salmon',        color:'#FA8072',type:'Digital',
+   svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#FA8072" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/><circle cx="9" cy="10" r="1" fill="#FF7F50" stroke="none"/></svg>`},
   {name:'Cash / Wallet', color:'#a78bfa',type:'Physical',
    svg:`<svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><circle cx="17" cy="12" r="2.5" fill="rgba(167,139,250,.2)"/></svg>`},
 ];
@@ -3236,7 +3591,7 @@ function buildRows(){
   MONTHS.forEach((m,i)=>{
     const raw=sal[i]!==null?String(sal[i]):'';
     const displayed=fmtInput(raw);
-    const r=document.createElement('div');r.className='irow';
+    const r=document.createElement('div');r.className='irow';if(i===0)r.id='sal-row-0';
     r.style.cssText='grid-template-columns:26px 80px 100px 110px 100px 80px 140px;height:38px;min-height:38px;max-height:38px;overflow:hidden;';
     r.innerHTML=`<div><span class="irow-num">${i+1}</span></div><div><span class="irow-month">${m}<span>${S.active}</span></span></div><div><input type="text" inputmode="decimal" id="si-${i}" placeholder="0.00" value="${displayed}"></div><div><span class="cval" id="sd-${i}" style="color:var(--muted)">—</span></div><div><span class="cval" id="sm-${i}" style="color:var(--muted)">—</span></div><div><span class="cval" id="str-${i}" style="color:var(--muted)">—</span></div><div><input type="text" id="sn-${i}" placeholder="add a note…" value="${notes[i]||''}"></div>`;
     c.appendChild(r);
@@ -3279,7 +3634,7 @@ function buildVaultCards(){
   vaults.forEach((v,i)=>{
     const rgb=hexToRgb(v.color);
     // VAULT CARD
-    const card=document.createElement('div');card.className='vc';
+    const card=document.createElement('div');card.className='vc';if(i===0)card.id='vc-first';
     card.style.cssText=`--vca:${v.color};--vcr:${rgb};`;
     card.innerHTML=`
       <div class="vc-stripe"></div><div class="vc-glow"></div>
@@ -4490,6 +4845,7 @@ function initSupabase(){
         updateSidebarProfile();
         renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
         updateCurrencySymbols();renderSingilList();computeSingilKPIs();
+        checkAndStartTour();
       } // end isNewLogin
     }
     if(event === 'SIGNED_OUT'){
@@ -6563,11 +6919,245 @@ function checkAndNotify(playAudio){
 
 
 
+
+// ════════════════════════════════════════
+// SALARYOS GUIDED TOUR
+// ════════════════════════════════════════
+const TOUR_STEPS = [
+  {
+    target: null,
+    title: null,
+    desc: 'SalaryOS is your personal financial OS. We will walk you through the key features — it only takes a minute!',
+    page: null,
+    position: 'center'
+  },
+  {
+    target: '#sal-row-0',
+    title: 'Log your salary here 💰',
+    desc: 'Click the input under the SALARY column and type your monthly income. Differences and trends are computed automatically.',
+    page: 'salary',
+    position: 'bottom'
+  },
+  {
+    target: '#vc-first',
+    title: 'Customize your bank 🏦',
+    desc: 'Click the bank name to switch banks, change the brand color, or adjust the savings percentage.',
+    page: 'vault',
+    position: 'bottom'
+  },
+  {
+    target: '#exp-log-add-form',
+    title: 'Track your expenses 📊',
+    desc: 'Select a category, enter a description and amount, then hit Add to log an expense.',
+    page: 'expenses',
+    position: 'bottom'
+  },
+  {
+    target: '#fab-btn',
+    title: 'Quick Add anywhere ➕',
+    desc: 'Tap the + button to quickly add a salary entry, expense, or savings goal from any page.',
+    page: null,
+    position: 'top'
+  },
+  {
+    target: '#nw-add-row',
+    title: 'Track your net worth 📈',
+    desc: 'Add your assets and liabilities here. SalaryOS will compute and track your net worth over time.',
+    page: 'networth',
+    position: 'bottom'
+  },
+  {
+    target: '#theme-icon-btn',
+    title: 'Light & Dark mode 🌙',
+    desc: 'Toggle between light and dark mode anytime — your preference is saved automatically.',
+    page: null,
+    position: 'bottom'
+  },
+  {
+    target: '#tour-help-btn',
+    title: 'Need a refresher? 💡',
+    desc: 'Tap the ? button anytime to replay this tour.',
+    page: null,
+    position: 'right'
+  },
+  {
+    target: null,
+    title: 'You are all set! 🚀',
+    desc: 'Start tracking your finances and building better money habits. Welcome to SalaryOS!',
+    page: null,
+    position: 'center'
+  }
+];
+
+let _tourStep = 0;
+let _tourActive = false;
+
+function startTour() {
+  _tourStep = 0;
+  _tourActive = true;
+  closeMobNav();
+  document.body.classList.add('tour-active');
+  _showTourStep();
+}
+
+function _showTourStep() {
+  const step = TOUR_STEPS[_tourStep];
+  const overlay  = document.getElementById('tour-overlay');
+  const spotlight = document.getElementById('tour-spotlight');
+  const tooltip  = document.getElementById('tour-tooltip');
+
+  // Personalized welcome title
+  let title = step.title;
+  if (_tourStep === 0) {
+    const name = (_userProfile && _userProfile.name) ? _userProfile.name.split(' ')[0] : 'there';
+    title = 'Hey, ' + name + '! 👋';
+  }
+
+  // Update content
+  document.getElementById('tour-step-label').textContent = 'Step ' + (_tourStep + 1) + ' of ' + TOUR_STEPS.length;
+  document.getElementById('tour-title').textContent = title;
+  document.getElementById('tour-desc').textContent = step.desc;
+
+  // Update dots
+  document.getElementById('tour-dots').innerHTML = TOUR_STEPS.map(function(_,i){
+    return '<div class="tour-dot' + (i === _tourStep ? ' active' : '') + '"></div>';
+  }).join('');
+
+  // Update next button
+  const isLast = _tourStep === TOUR_STEPS.length - 1;
+  document.getElementById('tour-next-btn').innerHTML = isLast ? 'Done ✓' : 'Next →';
+
+  // Navigate to page if needed
+  if (step.page) {
+    goPage(step.page);
+    // Wait for page render before positioning spotlight
+    setTimeout(function(){ _positionTour(step, overlay, spotlight, tooltip); }, 300);
+  } else {
+    _positionTour(step, overlay, spotlight, tooltip);
+  }
+}
+
+function _positionTour(step, overlay, spotlight, tooltip) {
+  var oTop    = document.getElementById('tour-overlay-top');
+  var oBot    = document.getElementById('tour-overlay-bottom');
+  var oLeft   = document.getElementById('tour-overlay-left');
+  var oRight  = document.getElementById('tour-overlay-right');
+
+  tooltip.style.display = 'block';
+
+  if (step.target && step.position !== 'center') {
+    var el = document.querySelector(step.target);
+    if (el) {
+      var rect = el.getBoundingClientRect();
+      var pad  = 10;
+      var sx   = rect.left - pad;
+      var sy   = rect.top - pad;
+      var sw   = rect.width + pad*2;
+      var sh   = rect.height + pad*2;
+      var W    = window.innerWidth;
+      var H    = window.innerHeight;
+
+      // Hide full overlay, use 4-panel cutout instead
+      overlay.style.display = 'none';
+
+      // Top panel
+      oTop.style.display = 'block';
+      oTop.style.left   = '0'; oTop.style.top    = '0';
+      oTop.style.width  = W + 'px'; oTop.style.height = sy + 'px';
+
+      // Bottom panel
+      oBot.style.display = 'block';
+      oBot.style.left   = '0'; oBot.style.top    = (sy + sh) + 'px';
+      oBot.style.width  = W + 'px'; oBot.style.height = (H - sy - sh) + 'px';
+
+      // Left panel
+      oLeft.style.display  = 'block';
+      oLeft.style.left  = '0'; oLeft.style.top    = sy + 'px';
+      oLeft.style.width = sx + 'px'; oLeft.style.height = sh + 'px';
+
+      // Right panel
+      oRight.style.display = 'block';
+      oRight.style.left   = (sx + sw) + 'px'; oRight.style.top  = sy + 'px';
+      oRight.style.width  = (W - sx - sw) + 'px'; oRight.style.height = sh + 'px';
+
+      // Spotlight border
+      spotlight.style.display = 'block';
+      spotlight.style.left    = sx + 'px';
+      spotlight.style.top     = sy + 'px';
+      spotlight.style.width   = sw + 'px';
+      spotlight.style.height  = sh + 'px';
+
+      // Tooltip position
+      var tipW = 272, tipH = 200, margin = 14;
+      var left, top;
+
+      if (step.position === 'bottom') {
+        left = Math.max(12, Math.min(rect.left, W - tipW - 12));
+        top  = sy + sh + margin;
+        if (top + tipH > H - 12) top = sy - tipH - margin;
+      } else if (step.position === 'top') {
+        left = Math.max(12, Math.min(rect.left, W - tipW - 12));
+        top  = sy - tipH - margin;
+        if (top < 12) top = sy + sh + margin;
+      } else {
+        left = sx + sw + margin;
+        top  = sy + sh/2 - tipH/2;
+        if (left + tipW > W - 12) left = sx - tipW - margin;
+        top = Math.max(12, Math.min(top, H - tipH - 12));
+      }
+
+      tooltip.style.left      = left + 'px';
+      tooltip.style.top       = top + 'px';
+      tooltip.style.transform = 'none';
+      return;
+    }
+  }
+
+  // Center — no spotlight, full overlay
+  overlay.style.display = 'block';
+  oTop.style.display = oBot.style.display = oLeft.style.display = oRight.style.display = 'none';
+  spotlight.style.display = 'none';
+  tooltip.style.left      = '50%';
+  tooltip.style.top       = '50%';
+  tooltip.style.transform = 'translate(-50%, -50%)';
+}
+
+function tourNext() {
+  if (_tourStep < TOUR_STEPS.length - 1) {
+    _tourStep++;
+    _showTourStep();
+  } else {
+    tourSkip();
+  }
+}
+
+function tourSkip() {
+  _tourActive = false;
+  document.body.classList.remove('tour-active');
+  ['tour-overlay','tour-overlay-top','tour-overlay-bottom',
+   'tour-overlay-left','tour-overlay-right',
+   'tour-spotlight','tour-tooltip'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  S.tourSeen = true;
+  save();
+}
+
+function checkAndStartTour() {
+  if (!S.tourSeen && S.setupDone) {
+    setTimeout(startTour, 800);
+  }
+}
+
+
+
 // ─── INIT ───
 initSupabase();
 renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
 updateCurrencySymbols();
 renderSingilList();computeSingilKPIs();
+checkAndStartTour();
 updateSidebarProfile(); // show Guest by default
 
 // Hide welcome overlay while checking session
