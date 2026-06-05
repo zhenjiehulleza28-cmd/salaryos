@@ -389,7 +389,7 @@ input.goal-inp::placeholder{color:var(--muted);opacity:.4;font-size:10px;font-we
 .add-goal-btn:hover{border-color:#00D5E6;color:#00D5E6;background:rgba(0,213,230,.04);}
 
 /* ── BANK PICKER MODAL ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:500;align-items:center;justify-content:center;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:9200;align-items:center;justify-content:center;}
 .modal-bg.open{display:flex;}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:32px 30px 26px;width:400px;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.65);transition:background .3s;}
 .modal-title{font-size:21px;font-weight:900;margin-bottom:5px;color:var(--text-strong);letter-spacing:-.4px;}
@@ -1745,212 +1745,180 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
    ════════════════ */
 @media (max-width: 900px) {
 
-  /* Sidebar slides off-screen, hamburger appears */
+  /* ── SIDEBAR ── */
   .sidebar {
     transform: translateX(-242px);
     transition: transform .28s cubic-bezier(.4,0,.2,1);
     z-index: 9050 !important;
   }
-  .sidebar.mob-open {
-    transform: translateX(0);
-    z-index: 9050 !important;
-  }
+  .sidebar.mob-open { transform: translateX(0); z-index: 9050 !important; }
   .mob-overlay {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.45);
+    background: rgba(0,0,0,.5);
     z-index: 9040 !important;
     opacity: 0;
     pointer-events: none;
     transition: opacity .28s;
   }
   .mob-overlay.open { opacity: 1; pointer-events: all; }
+  .mob-menu-btn { display: flex !important; }
 
-  /* Main content fills full width */
-  .main {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-  }
+  /* ── MAIN ── */
+  .main { margin-left: 0 !important; width: 100vw !important; max-width: 100vw !important; }
 
-  /* Show hamburger on mobile */
-  #mob-menu-btn { display: flex !important; }
+  /* ── TOPBAR ── */
+  .topbar { padding: 10px 14px !important; z-index: 9100 !important; }
+  #live-clock-badge { display: none !important; }
+  .live-badge { display: none !important; }
+  .tb-sub { display: none !important; }
+  .notif-btn { width: 32px !important; height: 32px !important; }
 
-  /* Topbar — clean on mobile, left padding for fixed hamburger */
-  .topbar { padding: 9px 12px; gap: 6px; }
-  #live-clock { display: none; }
-  #live-clock-badge { display: none; }
-  .live-badge { display: none; }
-  .notif-btn { width: 32px; height: 32px; }
-  .tb-sub { display: none; }
+  /* ── PAGE PADDING ── */
+  .page { padding: 16px 14px 90px !important; }
+  #page-budget, #page-networth, #page-compare { padding: 16px 14px 90px !important; }
 
-  /* Page padding */
-  .page { padding: 18px 16px 100px !important; }
+  /* ── OVERVIEW ── */
+  .hero { padding: 20px 16px !important; }
+  .hero-h1 { font-size: 26px !important; }
+  .hero-stats { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  .hstat-val { font-size: 20px !important; }
+  .sum-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
 
-  /* ── KPI / Summary cards ── */
-  .kpi-row           { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-  .sum-grid          { grid-template-columns: 1fr 1fr !important; }
-  .grid-2, .ov-row   { grid-template-columns: 1fr !important; }
-
-  /* ── Vault ── */
-  .vault-grid        { grid-template-columns: 1fr 1fr !important; }
-  .vault-totals      { grid-template-columns: 1fr 1fr !important; }
-  .vc-grid           { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-
-  /* ── Goals ── */
-  .goal-grid         { grid-template-columns: 1fr 1fr !important; }
-  .goal-card         { padding: 14px !important; }
-
-  /* ── Expenses ── */
-  .exp-cat-grid      { grid-template-columns: 1fr 1fr !important; }
-  .exp-log-add       { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
-  .exp-log-add .exp-add-btn { grid-column: span 2; }
-
-  /* ── Budget ── */
-  .budget-item       { grid-template-columns: 120px 1fr 1fr 60px; gap: 8px; }
-
-  /* ── Net worth ── */
-  .nw-add-row        { grid-template-columns: 1fr; }
-
-  /* ── Salary tracker rows — reflow to flex ── */
+  /* ── SALARY TRACKER ── */
+  /* Stack monthly log and quick look vertically */
+  .salary-layout { flex-direction: column !important; }
+  .salary-main { width: 100% !important; }
+  .ql-panel { width: 100% !important; min-width: unset !important; }
+  /* Salary rows - show only month + salary input */
   .irow {
-    display: flex !important;
-    flex-wrap: wrap;
-    align-items: center;
+    display: grid !important;
+    grid-template-columns: 70px 1fr !important;
     padding: 10px 12px !important;
-    gap: 4px 10px;
     height: auto !important;
     min-height: unset !important;
     max-height: unset !important;
+    gap: 0 8px;
   }
-  .irow > div:nth-child(1) { display: none; }            /* # col */
-  .irow > div:nth-child(2) { flex: 0 0 56px; }           /* month */
-  .irow > div:nth-child(3) { flex: 1 1 140px; }          /* salary */
-  .irow > div:nth-child(4) { flex: 0 0 90px; font-size: 11px; color: var(--muted); } /* diff */
-  .irow > div:nth-child(5) { flex: 0 0 70px; font-size: 11px; color: var(--muted); } /* mom% */
-  .irow > div:nth-child(6) { flex: 0 0 60px; font-size: 11px; }  /* trend */
-  .irow > div:nth-child(7) { flex: 1 1 100%; font-size: 11px; margin-top: 2px; } /* notes */
-
-  /* ── Salary table header ── */
-  .salary-header > div:nth-child(1),
-  .salary-header > div:nth-child(4),
-  .salary-header > div:nth-child(5),
-  .salary-header > div:nth-child(6) { display: none !important; }
-
-  /* ── Health score ── */
-  .health-score-wrap  { flex-direction: column; gap: 20px; }
-  .health-factors     { grid-template-columns: 1fr 1fr; }
-
-  /* ── Alloc table ── */
-  .alloc-table        { font-size: 11px; }
-  .alloc-table td, .alloc-table th { padding: 6px; }
-
-  /* ── Clients / Singil ── */
-  .cst-thead          { display: none !important; }
-  .cst-card           { grid-template-columns: 1fr 1fr !important; padding: 12px !important; }
-  .cst-card > div:nth-child(5) { grid-column: span 2; }
-
-  /* ── Quick look panel — too wide for tablet ── */
-  .ql-panel           { min-width: 0; width: 100% !important; }
-
-  /* ── Modals ── */
-  [id$="-modal"] > div,
-  .modal-card,
-  .cst-modal-inner,
-  .qa-modal-inner {
-    width: calc(100vw - 28px) !important;
-    max-width: 100% !important;
-    padding: 22px 18px !important;
-    border-radius: 16px !important;
-    margin: 0 auto;
-  }
-
-  /* ── Welcome card ── */
-  .welcome-card { width: calc(100vw - 28px); padding: 28px 20px; }
-
-  /* ── FAB ── */
-  .fab-wrap { bottom: 24px !important; right: 16px !important; }
-
-  /* ── Business tracker ── */
-  .biz-grid { grid-template-columns: 1fr !important; }
-}
-
-/* ════════════════
-   PHONE: ≤ 480px
-   ════════════════ */
-@media (max-width: 480px) {
-
-  /* Topbar tighter */
-  .topbar { padding: 9px 12px; }
-  .tb-left .tb-title { font-size: 17px !important; }
-  .tb-left .tb-sub   { display: none; }
-  .topbar-right      { gap: 6px; }
-
-  /* Page padding + bottom room for FAB */
-  .page { padding: 14px 12px 100px !important; }
-
-  /* ── KPI cards ── */
-  .kpi-row  { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-  .kpi-card { padding: 12px 10px !important; }
-  .kpi-val  { font-size: 17px !important; }
-  .kpi-label { font-size: 9px !important; }
-
-  /* ── Overview hero ── */
-  .hero-h1   { font-size: 24px !important; }
-  .hero-h2   { font-size: 20px !important; }
-  .hero-sub  { font-size: 12px !important; }
-  .hero-stats { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-  .hstat-val  { font-size: 18px !important; }
-  .hstat-lbl  { font-size: 9px !important; }
-
-  /* ── Summary / vault ── */
-  .sum-grid   { grid-template-columns: 1fr 1fr !important; }
-  .vault-grid { grid-template-columns: 1fr 1fr !important; }
-  .goal-grid  { grid-template-columns: 1fr !important; }
-
-  /* ── Salary tracker — phone view ── */
+  .irow > div:nth-child(1) { display: none !important; }
+  .irow > div:nth-child(3) { grid-column: 2; }
   .irow > div:nth-child(4),
   .irow > div:nth-child(5),
-  .irow > div:nth-child(6) { display: none !important; } /* hide diff/mom/trend */
-  .irow > div:nth-child(7) { display: none !important; } /* hide notes */
-  .irow > div:nth-child(2) { flex: 0 0 50px; font-size: 12px; }
-  .irow > div:nth-child(3) { flex: 1 1 auto; }
+  .irow > div:nth-child(6),
+  .irow > div:nth-child(7) { display: none !important; }
 
-  /* ── Budget ── */
-  .budget-item { grid-template-columns: 1fr 1fr; gap: 6px; }
+  /* ── SAVINGS VAULT ── */
+  .vc-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .vc { padding: 14px 12px !important; }
+  .vc-bank-badge { flex-wrap: wrap; }
+  .vc-bank-name { font-size: 11px !important; }
+  .vc-val { font-size: 22px !important; }
+  /* Vault bottom summary - single row scroll */
+  .vault-summary-row { 
+    display: flex !important; 
+    overflow-x: auto !important; 
+    gap: 8px !important;
+    padding-bottom: 4px;
+  }
+  .vault-summary-row > div { flex: 0 0 130px !important; }
 
-  /* ── Expense categories ── */
-  .exp-cat-grid { grid-template-columns: 1fr 1fr !important; }
+  /* ── EXPENSES ── */
+  .exp-cat-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .exp-log-add { 
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  .exp-log-add > *:last-child { grid-column: span 2; }
 
-  /* ── Modals full-width ── */
-  [id$="-modal"] > div,
-  .modal-card,
-  .cst-modal-inner,
-  .qa-modal-inner {
-    width: calc(100vw - 16px) !important;
-    padding: 18px 14px !important;
-    border-radius: 14px !important;
+  /* ── SAVINGS GOALS ── */
+  .goal-grid { grid-template-columns: 1fr !important; }
+  .goal-card { padding: 14px !important; }
+
+  /* ── BUDGET ── */
+  .budget-item { 
+    grid-template-columns: 1fr 80px 80px 60px !important; 
+    gap: 6px !important;
+    font-size: 12px !important;
   }
 
-  /* ── Clients ── */
-  .cst-card { grid-template-columns: 1fr !important; }
-  .cst-card > div:nth-child(5) { grid-column: span 1; }
+  /* ── NET WORTH ── */
+  .nw-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .nw-section { width: 100% !important; }
 
-  /* ── Year tabs ── */
-  .year-tab  { font-size: 11px !important; padding: 6px 8px !important; }
-  #year-list { gap: 4px !important; }
+  /* ── CLIENT BILLING ── */
+  .singil-kpi-row { 
+    grid-template-columns: 1fr 1fr !important; 
+    gap: 8px !important;
+  }
+  .singil-kpi { padding: 12px 10px !important; }
+  .singil-kpi .sk-val { font-size: 16px !important; }
+  .singil-kpi .sk-lbl { font-size: 9px !important; }
+  .cst-thead { display: none !important; }
+  .cst-card { 
+    grid-template-columns: 1fr 1fr !important; 
+    padding: 12px !important; 
+    gap: 8px !important;
+  }
+  .cst-card > div:last-child { grid-column: span 2; }
 
-  /* ── FAB position ── */
-  .fab-wrap  { bottom: 20px !important; right: 14px !important; }
+  /* ── BUSINESS TRACKER ── */
+  .biz-dual { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .biz-income-form, .biz-exp-form { width: 100% !important; }
+  .biz-inp-row { 
+    grid-template-columns: 1fr 100px !important; 
+    gap: 6px !important;
+  }
 
-  /* ── Kaching chat ── */
+  /* ── MODALS ── */
+  .modal-card, .cst-modal-inner, .qa-modal-inner,
+  [id$="-modal"] > div { 
+    width: calc(100vw - 24px) !important; 
+    max-width: 100% !important;
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  /* ── FAB ── */
+  .fab-wrap { bottom: 20px !important; right: 16px !important; }
+
+  /* ── KACHING ── */
   .kaching-chat-win {
     width: calc(100vw - 16px) !important;
     right: 8px !important;
     bottom: 70px !important;
     max-height: 70vh !important;
   }
+}
+
+@media (max-width: 480px) {
+
+  /* ── TOPBAR ── */
+  .topbar { padding: 8px 12px !important; }
+  .tb-title { font-size: 16px !important; }
+
+  /* ── PAGE ── */
+  .page { padding: 14px 12px 90px !important; }
+
+  /* ── OVERVIEW ── */
+  .hero-h1 { font-size: 22px !important; }
+  .sum-grid { grid-template-columns: 1fr 1fr !important; }
+  .hstat-val { font-size: 17px !important; }
+
+  /* ── VAULT ── */
+  .vc-val { font-size: 18px !important; }
+  .vc-bank-name { font-size: 10px !important; }
+
+  /* ── CLIENT BILLING KPI ── */
+  .singil-kpi-row { grid-template-columns: 1fr 1fr !important; }
+  .singil-kpi .sk-val { font-size: 14px !important; }
+
+  /* ── YEAR TABS ── */
+  .year-tab { font-size: 11px !important; padding: 5px 8px !important; }
+
+  /* ── FAB ── */
+  .fab-wrap { bottom: 16px !important; right: 12px !important; }
 }
 
 /* ════════════════════════════════
@@ -3471,7 +3439,16 @@ function updateCurrencySymbols(){
 
 // ─── THEME ───
 function applyTheme(){document.documentElement.setAttribute('data-theme',S.theme);document.getElementById('theme-emoji').textContent=S.theme==='dark'?'🌙':'☀️';setTimeout(compute,60);}
-function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';save();applyTheme();}
+function toggleTheme(){
+  S.theme = S.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(); // apply instantly — no lag
+  // Save in background after visual update
+  try{ localStorage.setItem('sos4', JSON.stringify(S)); } catch(e){}
+  if(_supabaseUser && _supabase){
+    clearTimeout(save._timer);
+    save._timer = setTimeout(saveToSupabase, 1000);
+  }
+}
 applyTheme();
 
 // ─── YEAR ───
@@ -4725,7 +4702,7 @@ function removeExpEntry(id){
 }
 function clearExpLog(){
   const modal=document.createElement('div');
-  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:600;display:flex;align-items:center;justify-content:center;';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:9200;display:flex;align-items:center;justify-content:center;';
   modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 26px;width:320px;box-shadow:0 40px 100px rgba(0,0,0,.65);"><div style="font-size:18px;font-weight:900;color:var(--text-strong);margin-bottom:6px;">Clear Expense Log?</div><div style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.6;">This will remove all expense log entries. Expense category totals are kept.</div><div style="display:flex;gap:8px;"><button onclick="doClrExpLog()" style="flex:1;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:11px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:#F87171;cursor:pointer;">Clear All</button><button onclick="this.closest('[style*=fixed]').remove()" style="background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</button></div></div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
@@ -5350,7 +5327,7 @@ function qaDeleteCustomCat(){
   // confirm via custom modal
   const _key=sel?.value;
   const modal=document.createElement('div');
-  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:600;display:flex;align-items:center;justify-content:center;';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:9200;display:flex;align-items:center;justify-content:center;';
   modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 26px;width:300px;box-shadow:0 40px 100px rgba(0,0,0,.65);"><div style="font-size:18px;font-weight:900;color:var(--text-strong);margin-bottom:6px;">Delete Category?</div><div style="font-size:12px;color:var(--muted);margin-bottom:20px;">This custom category will be permanently removed.</div><div style="display:flex;gap:8px;"><button onclick="doQaDelCat('${_key}')" style="flex:1;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:11px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:#F87171;cursor:pointer;">Delete</button><button onclick="this.closest('[style*=fixed]').remove()" style="background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</button></div></div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
@@ -5453,7 +5430,7 @@ function openBizNameModal(mode){
   const isRename=mode==='rename';
   const modal=document.createElement('div');
   modal.id='biz-name-modal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:600;display:flex;align-items:center;justify-content:center;';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:9200;display:flex;align-items:center;justify-content:center;';
   modal.innerHTML=`
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 26px;width:340px;box-shadow:0 40px 100px rgba(0,0,0,.65);">
       <div style="font-size:18px;font-weight:900;color:var(--text-strong);margin-bottom:4px;">${isRename?'Rename Business':'New Business'}</div>
@@ -5514,7 +5491,7 @@ function bizConfirmDelete(idx){
   if(existing)existing.remove();
   const modal=document.createElement('div');
   modal.id='biz-del-modal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:600;display:flex;align-items:center;justify-content:center;';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(2,9,22,.75);backdrop-filter:blur(10px);z-index:9200;display:flex;align-items:center;justify-content:center;';
   modal.innerHTML=`
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px 26px;width:320px;box-shadow:0 40px 100px rgba(0,0,0,.65);">
       <div style="font-size:18px;font-weight:900;color:var(--text-strong);margin-bottom:6px;">Delete Business?</div>
@@ -7960,7 +7937,7 @@ ${context}`;
 </script>
 
 <!-- ═══ EXPORT / DOWNLOAD MODAL ═══ -->
-<div id="export-modal" style="display:none;position:fixed;inset:0;background:rgba(2,9,22,.8);backdrop-filter:blur(12px);z-index:700;align-items:center;justify-content:center;">
+<div id="export-modal" style="display:none;position:fixed;inset:0;background:rgba(2,9,22,.8);backdrop-filter:blur(12px);z-index:9200;align-items:center;justify-content:center;">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:28px 26px;width:min(480px,94vw);max-height:90vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);">
 
     <!-- Header -->
