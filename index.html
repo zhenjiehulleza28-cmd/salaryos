@@ -3655,6 +3655,22 @@ function buildVaultCards(){
   });
   // force kpi-row cols
   kpiRow.style.gridTemplateColumns=`repeat(${vaults.length},1fr)`;
+  // Equalize vault card heights on mobile
+  if(window.innerWidth <= 900) {
+    requestAnimationFrame(()=>{
+      const cards = document.querySelectorAll('#vault-cards .vc');
+      // Reset first
+      cards.forEach(c => c.style.height = '');
+      // Find max height per row (2 cards per row)
+      for(let i = 0; i < cards.length; i += 2) {
+        const a = cards[i], b = cards[i+1];
+        if(!a) break;
+        const h = b ? Math.max(a.offsetHeight, b.offsetHeight) : a.offsetHeight;
+        a.style.height = h + 'px';
+        if(b) b.style.height = h + 'px';
+      }
+    });
+  }
 }
 
 function getBankEmoji(name){
@@ -7219,6 +7235,7 @@ function realtimeTick(){
 setInterval(realtimeTick, 30000);
 updateLiveClock();
 window.addEventListener('resize',compute);
+window.addEventListener('resize',()=>{ if(typeof buildVaultCards==='function') buildVaultCards(); });
 
 // ─── EXPORT MODAL ───
 function openExportModal(){
