@@ -668,7 +668,7 @@ canvas{display:block;}
 .page{width:100%;box-sizing:border-box;}
 
 /* ── MOBILE BOTTOM NAV ── */
-.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--bg4);cursor:pointer;flex-shrink:0;}
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--bg4);cursor:pointer;flex-shrink:0;pointer-events:auto !important;position:relative;z-index:9060 !important;}
 .mob-menu-btn svg{width:18px;height:18px;stroke:var(--text2);}
 .mob-overlay{display:none;position:fixed;inset:0;background:rgba(2,9,22,.5);z-index:199;backdrop-filter:blur(4px);}
 .mob-overlay.open{display:block;}
@@ -1749,15 +1749,18 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   .sidebar {
     transform: translateX(-242px);
     transition: transform .28s cubic-bezier(.4,0,.2,1);
-    z-index: 400;
+    z-index: 9050 !important;
   }
-  .sidebar.mob-open { transform: translateX(0); }
+  .sidebar.mob-open {
+    transform: translateX(0);
+    z-index: 9050 !important;
+  }
   .mob-overlay {
     display: block;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,.45);
-    z-index: 399;
+    z-index: 9040 !important;
     opacity: 0;
     pointer-events: none;
     transition: opacity .28s;
