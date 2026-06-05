@@ -75,7 +75,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 /* ── MAIN ── */
 .main{margin-left:242px;flex:1;display:flex;flex-direction:column;min-height:100vh;width:calc(100vw - 242px);}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--border);background:var(--bg0);position:sticky;top:0;z-index:100;transition:background .3s;width:100%;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--border);background:var(--bg0);position:sticky;top:0;z-index:9100 !important;transition:background .3s;width:100%;}
 [data-theme="dark"] .topbar{background:rgba(2,9,22,.9);}
 .tb-left .tb-title{font-size:20px;font-weight:900;letter-spacing:-.5px;color:var(--text-strong);}
 .tb-left .tb-sub{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:500;}
@@ -668,7 +668,7 @@ canvas{display:block;}
 .page{width:100%;box-sizing:border-box;}
 
 /* ── MOBILE BOTTOM NAV ── */
-.mob-menu-btn{display:none;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto !important;}
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--bg4);cursor:pointer;flex-shrink:0;}
 .mob-menu-btn svg{width:18px;height:18px;stroke:var(--text2);}
 .mob-overlay{display:none;position:fixed;inset:0;background:rgba(2,9,22,.5);z-index:199;backdrop-filter:blur(4px);}
 .mob-overlay.open{display:block;}
@@ -1778,7 +1778,7 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   #mob-menu-btn { display: flex !important; }
 
   /* Topbar — clean on mobile, left padding for fixed hamburger */
-  .topbar { padding: 9px 12px 9px 58px; gap: 6px; }
+  .topbar { padding: 9px 12px; gap: 6px; }
   #live-clock { display: none; }
   #live-clock-badge { display: none; }
   .live-badge { display: none; }
@@ -2069,15 +2069,7 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
 .tour-btn-next:hover { opacity: .85; }
 .tour-btn-next:active { transform: scale(.97); }
 
-/* Block all app interaction during tour */
-body.tour-active .main {
-  pointer-events: none !important;
-}
-body.tour-active #mob-menu-btn {
-  pointer-events: all !important;
-  position: relative;
-  z-index: 9010;
-}
+/* Tour active — only tooltip and panels are interactive */
 body.tour-active #tour-tooltip,
 body.tour-active #tour-overlay-top,
 body.tour-active #tour-overlay-bottom,
@@ -2489,11 +2481,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<!-- ── HAMBURGER — fixed, always on top, outside all stacking contexts ── -->
-<button id="mob-menu-btn" onclick="toggleMobNav()" style="display:none;position:fixed;top:10px;left:10px;z-index:99999;width:38px;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,0.15);background:rgba(15,25,40,0.95);cursor:pointer;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">
-  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18" style="color:#e8f0f7;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-</button>
-
 <!-- ── GUIDED TOUR ── -->
 <div id="tour-overlay" style="display:none;"></div>
 <div id="tour-overlay-top" style="display:none;"></div>
@@ -2521,7 +2508,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 </div>
 
 <!-- ═══ SIDEBAR ═══ -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="logo-wrap">
     <div class="logo-mark">
       <div class="logo-icon-wrap">
@@ -2706,7 +2693,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 <div class="main">
   <div class="topbar">
     <div class="tb-left" style="display:flex;align-items:center;gap:12px;">
-
+      <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleMobNav()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <div>
         <div class="tb-title" id="tb-title">Overview</div>
         <div class="tb-sub" id="tb-sub">pick a year, start tracking 👋</div>
