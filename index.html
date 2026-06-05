@@ -1800,59 +1800,47 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   .at th, .at td { padding:6px 5px !important; white-space:nowrap; }
 
   /* ── VAULT ── */
-  .vault-grid { grid-template-columns:1fr 1fr !important; gap:10px !important; align-items:stretch !important; }
+  .vault-grid { 
+    grid-template-columns:1fr 1fr !important; 
+    gap:10px !important; 
+    align-items:stretch !important; 
+  }
   .vc { 
     padding:12px 10px !important; 
     display:flex !important; 
     flex-direction:column !important;
-    overflow:hidden !important;
   }
-  /* Redesign vc-top for mobile: icon+pct row, then bank name below */
-  .vc-top {
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    gap:4px !important;
-    margin-bottom:6px !important;
+  .vc-top { 
+    align-items:flex-start !important; 
+    margin-bottom:8px !important; 
   }
   .vc-bank-badge {
-    display:flex !important;
-    flex-direction:row !important;
-    align-items:center !important;
     gap:4px !important;
-    padding:0 !important;
-    border:none !important;
-    background:none !important;
-    margin-bottom:0 !important;
-    width:100% !important;
-    justify-content:space-between !important;
-  }
-  /* Left side: icon + name */
-  .vc-bank-emoji { 
-    flex-shrink:0; 
-    display:flex;
-    align-items:center;
+    padding:3px 6px !important;
+    max-width:calc(100% - 44px) !important;
   }
   .vc-bank-name { 
-    font-size:10px !important;
-    font-weight:700 !important;
+    font-size:9px !important;
     white-space:nowrap !important;
     overflow:hidden !important;
     text-overflow:ellipsis !important;
-    flex:1 !important;
-    max-width:none !important;
+    max-width:55px !important;
   }
-  .vc-bank-arrow { display:none !important; }
-  .vc-pct-badge { 
-    flex-shrink:0 !important; 
-    font-size:8px !important;
-    align-self:flex-start !important;
-  }
-  .vc-val { font-size:18px !important; margin-top:auto !important; }
+  .vc-bank-emoji svg { width:12px !important; height:12px !important; }
+  .vc-pct-badge { font-size:8px !important; flex-shrink:0 !important; }
+  .vc-val { font-size:18px !important; }
+  /* Vault totals bottom row */
   #vault-totals-row {
-    display:flex !important; overflow-x:auto !important;
-    gap:8px !important; padding-bottom:6px; -webkit-overflow-scrolling:touch;
+    display:flex !important; 
+    overflow-x:auto !important;
+    gap:8px !important; 
+    padding-bottom:6px !important; 
+    -webkit-overflow-scrolling:touch;
   }
-  #vault-totals-row > div { flex:0 0 140px !important; min-width:140px; }
+  #vault-totals-row > div { 
+    flex:0 0 130px !important; 
+    min-width:130px !important; 
+  }
 
   /* ── EXPENSES — remaining section ── */
   .exp-remaining {
@@ -2825,7 +2813,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <span class="ph-chip" style="background:rgba(0,213,230,.08);color:#00D5E6;">click bank to change · click % to edit split</span>
         </div>
         <div class="vault-grid" id="vault-cards"></div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;" id="vault-totals-row"></div>
+        <div style="margin-top:14px;" id="vault-totals-row"></div>
       </div>
     </div>
   </div>
