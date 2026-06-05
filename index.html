@@ -1780,9 +1780,11 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   .ov-row { grid-template-columns:1fr !important; gap:12px !important; }
 
   /* ── MONTHLY LOG — override inline style on irow ── */
+  #salary-scroll-wrap { overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
+  .inp-head { min-width:500px; }
   .inp-rows .irow {
     display:grid !important;
-    grid-template-columns:90px 1fr !important;
+    grid-template-columns:30px 80px 100px 110px 100px 80px 1fr !important;
     grid-template-rows:auto !important;
     height:auto !important;
     min-height:unset !important;
@@ -1790,13 +1792,8 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
     overflow:visible !important;
     padding:10px 12px !important;
   }
-  .inp-rows .irow > div:nth-child(1) { display:none !important; }
-  .inp-rows .irow > div:nth-child(2) { grid-column:1; grid-row:1; }
-  .inp-rows .irow > div:nth-child(3) { grid-column:2; grid-row:1; }
-  .inp-rows .irow > div:nth-child(4),
-  .inp-rows .irow > div:nth-child(5),
-  .inp-rows .irow > div:nth-child(6),
-  .inp-rows .irow > div:nth-child(7) { display:none !important; }
+  /* All columns visible - scroll horizontally */
+  .inp-rows .irow > div { display:block !important; }
 
   /* ── MONTHLY SPLIT BREAKDOWN — horizontal scroll ── */
   .at { font-size:10px !important; }
@@ -1846,9 +1843,22 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   #page-business .kpi-row { grid-template-columns:1fr 1fr !important; }
 
   /* ── CLIENT BILLING ── */
-  .cst-card { display:flex !important; flex-direction:column !important; gap:10px !important; padding:16px !important; }
   .cst-thead { display:none !important; }
+  .cst-card {
+    display:grid !important;
+    grid-template-columns:1fr auto !important;
+    grid-template-rows:auto auto auto !important;
+    gap:8px 12px !important;
+    padding:16px !important;
+    align-items:start;
+  }
+  .cst-card > div:nth-child(1) { grid-column:1; grid-row:1; }
+  .cst-card > div:nth-child(2) { grid-column:2; grid-row:1; text-align:right; font-size:16px !important; }
+  .cst-card > div:nth-child(3) { grid-column:1; grid-row:2; }
+  .cst-card > div:nth-child(4) { grid-column:2; grid-row:2; }
+  .cst-card > div:nth-child(5) { grid-column:1 / -1; grid-row:3; }
   .cst-card-name { font-size:14px !important; white-space:normal !important; }
+  .cst-card-salary { font-size:15px !important; white-space:nowrap !important; }
 
   /* ── INCOME VS EXPENSES ── */
   #page-compare .kpi-row { grid-template-columns:1fr 1fr !important; }
@@ -2696,8 +2706,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <div class="row-2" style="align-items:start;">
       <div class="panel" style="overflow:hidden;">
         <div class="ph"><div class="ph-left"><div class="ph-bar" style="background:var(--blue);"></div><span class="ph-lbl">Monthly Log</span></div><span class="ph-chip" style="background:rgba(123,189,232,.09);color:var(--blue);">type to compute</span></div>
-        <div class="inp-head"><div>#</div><div>Month</div><div style="color:var(--blue);">Salary</div><div style="color:var(--green);">Diff</div><div style="color:var(--yellow);">MoM %</div><div style="color:#00D5E6;">Trend</div><div style="color:var(--purple);">📝 Notes</div></div>
-        <div class="inp-rows" id="salary-rows"></div>
+        <div id="salary-scroll-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><div class="inp-head"><div>#</div><div>Month</div><div style="color:var(--blue);">Salary</div><div style="color:var(--green);">Diff</div><div style="color:var(--yellow);">MoM %</div><div style="color:#00D5E6;">Trend</div><div style="color:var(--purple);">📝 Notes</div></div>
+        <div class="inp-rows" id="salary-rows"></div></div>
       </div>
       <div class="col" style="min-width:0;overflow:hidden;">
         <div class="panel" style="overflow:hidden;">
@@ -2761,8 +2771,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     </div>
     <div class="exp-remaining">
       <div><div class="exp-rem-label">Monthly Budget (salary avg)</div><div class="exp-rem-val" id="exp-budget" style="color:var(--blue);">₱0.00</div></div>
-      <div style="text-align:center;"><div class="exp-rem-label">Total Spent</div><div class="exp-rem-val" id="exp-spent-total" style="color:var(--red);">₱0.00</div></div>
-      <div style="text-align:right;"><div class="exp-rem-label">Remaining</div><div class="exp-rem-val" id="exp-left">₱0.00</div></div>
+      <div><div class="exp-rem-label">Total Spent</div><div class="exp-rem-val" id="exp-spent-total" style="color:var(--red);">₱0.00</div></div>
+      <div><div class="exp-rem-label">Remaining</div><div class="exp-rem-val" id="exp-left">₱0.00</div></div>
     </div>
     <div class="exp-cat-grid" id="exp-cat-grid"></div>
     <!-- Expense Log -->
