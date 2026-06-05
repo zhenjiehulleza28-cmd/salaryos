@@ -1934,6 +1934,21 @@ input.budget-inp::placeholder{color:var(--muted);font-size:10px;font-weight:400;
   /* ── FAB + KACHING ── */
   .fab-wrap { bottom:20px !important; right:16px !important; }
   .kaching-chat-win { width:calc(100vw - 16px) !important; right:8px !important; bottom:70px !important; max-height:70vh !important; }
+  /* ── MOBILE HTML EXPENSE CHART ── */
+  #spending-chart-wrap { display:none !important; }
+  #exp-html-chart { display:block !important; }
+  .exp-hbar-wrap { display:flex; flex-direction:column; gap:10px; }
+  .exp-hbar-item { display:flex; align-items:center; gap:10px; }
+  .exp-hbar-icon { 
+    width:32px; height:32px; border-radius:8px; 
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .exp-hbar-icon svg { width:16px; height:16px; }
+  .exp-hbar-label { font-size:11px; font-weight:600; color:var(--muted); width:60px; flex-shrink:0; font-family:'Montserrat',sans-serif; }
+  .exp-hbar-track { flex:1; height:8px; background:var(--bg4); border-radius:4px; overflow:hidden; }
+  .exp-hbar-fill { height:100%; border-radius:4px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .exp-hbar-val { font-size:11px; font-weight:700; color:var(--text); width:60px; text-align:right; flex-shrink:0; font-family:'Montserrat',sans-serif; }
 }
 
 @media (max-width: 480px) {
@@ -2863,6 +2878,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           <canvas id="expBar" height="160" style="width:100%;"></canvas>
           <canvas id="expDonut" width="200" height="200" style="flex-shrink:0;"></canvas>
         </div>
+        <!-- Mobile HTML chart — shown only on mobile -->
+        <div id="exp-html-chart" style="display:none;"></div>
       </div>
     </div>
   </div>
@@ -3955,7 +3972,7 @@ function compute(){
   renderMicroInsights(total,avg,totalExpI,srI,count,vaults,vAmts);
 
   // CHARTS
-  drawBar('dashBar',sal,150);drawBar('salBar',sal,130);drawExpBar(exp,avg);drawDonut(exp);
+  drawBar('dashBar',sal,150);drawBar('salBar',sal,130);drawExpBar(exp,avg);drawDonut(exp);if(window.innerWidth<=900)drawExpHtmlChart(exp);
 }
 
 function setMom(vid,sid,momV){const ve=document.getElementById(vid),se=document.getElementById(sid);if(momV!==null){ve.textContent=(momV>=0?'+':'')+momV.toFixed(2)+'%';ve.style.color=momV>=0?'var(--green)':'var(--red)';if(se)se.textContent=momV>=0?'↑ going up 🔥':'↓ went down';}else{ve.textContent='—';ve.style.color='var(--yellow)';if(se)se.textContent='log 2+ months first';}}
