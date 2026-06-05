@@ -2106,27 +2106,6 @@ body.tour-active #tour-overlay-right {
   color: var(--accent);
   background: rgba(0,229,204,.08);
 }
-
-
-/* ── FINAL MOBILE FIXES: prevent vault/card squeezing and horizontal overflow ── */
-@media (max-width: 900px){
-  html, body { max-width:100%; overflow-x:hidden !important; }
-  .panel, .col, .row-full, .row-2, .page { min-width:0 !important; max-width:100% !important; }
-  .bank-cards, .stiles, .sum-grid, .exp-cat-grid, .goal-grid { min-width:0 !important; }
-  .bank-cards { grid-template-columns:1fr 1fr !important; gap:8px !important; }
-  .bc { min-width:0 !important; overflow:hidden !important; padding:10px !important; }
-  .bc > div:last-child { min-width:0 !important; overflow:hidden !important; }
-  .bc-name, .bc-amt, .bc-pct { white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; max-width:100% !important; }
-  .vault-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; width:100% !important; overflow:visible !important; }
-  .vc { min-width:0 !important; max-width:100% !important; overflow:hidden !important; }
-  .vc-label, .vc-bank-name, .vc-rule { white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; max-width:100% !important; }
-}
-@media (max-width: 480px){
-  .bank-cards, .vault-grid, .stiles { grid-template-columns:1fr !important; }
-  .bc, .vc { width:100% !important; }
-  .panel { padding:16px 14px !important; }
-}
-
 </style>
 <script>/* jsPDF v2.5.1 — bundled inline for offline support */
 /** @license
@@ -5141,30 +5120,30 @@ function initWelcome(){
         return;
       }
 
-      // ── NO SESSION: keep valid guest/local data instead of forcing welcome again
-      if(S && S.setupDone && S.user && S.user.type){
-        _userProfile = S.user;
-        overlay.style.display='none';
-        updateSidebarProfile();
-        renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();
-        buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();
-        updateAllocBanner();addSparklinesHTML();compute();
-        updateCurrencySymbols();renderSingilList();computeSingilKPIs();
-      } else {
-        overlay.style.display='flex';
-        showWScreen('ws-intro');
-      }
-    });
-  } else {
-    // ── NO SUPABASE CONFIG: guest-only mode — keep saved guest session
-    if(S && S.setupDone && S.user && S.user.type){
-      _userProfile = S.user;
-      overlay.style.display='none';
-      updateSidebarProfile();
-    } else {
+      // ── NO SESSION: show login screen ──
+      // Clear any leftover localStorage from a previous Google session
+      // so a new visitor or guest never sees another user's data
+      try{
+        localStorage.removeItem('sos4');
+        localStorage.removeItem('sos4_uid');
+      } catch(e){}
+      // Reset in-memory state to blank
+      const yr = new Date().getFullYear();
+      S = {years:[yr],active:yr,theme:'dark',currency:'PHP',data:{},customCats:[],clients:[]};
+      S.data[yr] = freshYear();
+
       overlay.style.display='flex';
       showWScreen('ws-intro');
-    }
+    });
+  } else {
+    // ── NO SUPABASE CONFIG: guest-only mode ──
+    // Clear any leftover data from a previous Google session
+    try{
+      localStorage.removeItem('sos4');
+      localStorage.removeItem('sos4_uid');
+    } catch(e){}
+    overlay.style.display='flex';
+    showWScreen('ws-intro');
   }
 }
 
@@ -7244,9 +7223,9 @@ if(localStorage.getItem('sos_logged_out')){
         updateCurrencySymbols();renderSingilList();computeSingilKPIs();
       });
     } else {
-      // No session — check saved guest/local setup, otherwise show welcome
-      const hasGuestSession = !!(S && S.setupDone && S.user && S.user.type);
-      if(hasGuestSession){
+      // No session — check guest data, otherwise show welcome
+      const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
+      if(hasData && S.user && S.user.type && S.setupDone){
         if(_welcomeOverlay) _welcomeOverlay.style.display='none';
         _userProfile=S.user||{name:'Guest',avatar:'👤',type:'guest'};
         updateSidebarProfile();
@@ -7260,9 +7239,9 @@ if(localStorage.getItem('sos_logged_out')){
     if(_welcomeOverlay){ _welcomeOverlay.style.display='flex'; showWScreen('ws-intro'); }
   });
 } else {
-  // No supabase — check saved guest/local setup
-  const hasGuestSession = !!(S && S.setupDone && S.user && S.user.type);
-  if(hasGuestSession){
+  // No supabase — check guest data
+  const hasData=S.years.length>0&&Object.keys(S.data).some(k=>S.data[k]?.sal?.some(v=>v>0));
+  if(hasData && S.user && S.user.type && S.setupDone){
     if(_welcomeOverlay) _welcomeOverlay.style.display='none';
     _userProfile=S.user||{name:'Guest',avatar:'👤',type:'guest'};
     updateSidebarProfile();
