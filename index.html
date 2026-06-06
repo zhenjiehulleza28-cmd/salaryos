@@ -3231,7 +3231,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 </div>
 
 <!-- ═══ WELCOME / LOGIN SCREEN ═══ -->
-<div class="welcome-overlay" id="welcome-overlay">
+<div class="welcome-overlay" id="welcome-overlay" style="display:none;">
   <div class="welcome-bg-orbs">
     <div class="orb orb1"></div>
     <div class="orb orb2"></div>
@@ -5040,7 +5040,10 @@ async function loadFromSupabase(){
 
 // Override save() to also sync to Supabase
 function save(){
-  try{ localStorage.setItem('sos4', JSON.stringify(S)); }catch{}
+  try{ 
+    localStorage.setItem('sos4', JSON.stringify(S));
+    if(_supabaseUser) localStorage.setItem('sos4_logged_in','1');
+  }catch{}
   // Debounced sync to Supabase (Google users only)
   if(_supabaseUser){
     clearTimeout(save._timer);
@@ -5146,6 +5149,11 @@ function initWelcome(){
       }catch(e){ localStorage.removeItem('sos4_logged_in'); }
     }
 
+    // Also check raw Supabase token as fallback
+    const _rawToken = localStorage.getItem('salaryos-auth') || 
+                      localStorage.getItem('sb-salaryos-auth-auth-token') ||
+                      localStorage.getItem('supabase.auth.token');
+    
     _supabase.auth.getSession().then(({data:{session}})=>{
       if(session?.user){
         // ── GOOGLE USER: active session found ──
