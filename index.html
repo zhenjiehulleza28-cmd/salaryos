@@ -3698,13 +3698,25 @@ function buildVaultCards(){
   });
   // force kpi-row cols
   kpiRow.style.gridTemplateColumns=`repeat(${vaults.length},1fr)`;
-  // Equalize vault card heights on mobile
+  // Mobile fixes
   if(window.innerWidth <= 900) {
     requestAnimationFrame(()=>{
+      // Force vault-totals-row to flex scroll
+      const tr = document.getElementById('vault-totals-row');
+      if(tr){
+        tr.style.display = 'flex';
+        tr.style.overflowX = 'auto';
+        tr.style.gap = '8px';
+        tr.style.webkitOverflowScrolling = 'touch';
+        tr.style.gridTemplateColumns = '';
+        Array.from(tr.children).forEach(c=>{
+          c.style.flex = '0 0 130px';
+          c.style.minWidth = '130px';
+        });
+      }
+      // Equalize vault card heights
       const cards = document.querySelectorAll('#vault-cards .vc');
-      // Reset first
       cards.forEach(c => c.style.height = '');
-      // Find max height per row (2 cards per row)
       for(let i = 0; i < cards.length; i += 2) {
         const a = cards[i], b = cards[i+1];
         if(!a) break;
@@ -4857,7 +4869,7 @@ function initSupabase(){
   });
   // Listen for auth changes (e.g. redirect back after OAuth)
   _supabase.auth.onAuthStateChange(async (event, session) => {
-    if(event === 'SIGNED_IN' && session?.user){
+    if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user){
       _supabaseUser = session.user;
       const meta = session.user.user_metadata || {};
       _userProfile = {
