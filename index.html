@@ -5107,6 +5107,18 @@ function initWelcome(){
   if(!overlay)return;
 
   if(_supabase){
+    // Show app immediately if we have cached data (avoid flicker)
+    const cached = localStorage.getItem('sos4');
+    const authKey = localStorage.getItem('salaryos-auth');
+    if(cached && authKey){
+      try{
+        const parsed = JSON.parse(cached);
+        if(parsed && parsed.user){
+          overlay.style.display='none'; // Hide welcome instantly
+        }
+      }catch(e){}
+    }
+
     _supabase.auth.getSession().then(({data:{session}})=>{
       if(session?.user){
         // ── GOOGLE USER: active session found ──
