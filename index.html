@@ -3704,16 +3704,35 @@ function buildVaultCards(){
       // Force vault-totals-row to flex scroll
       const tr = document.getElementById('vault-totals-row');
       if(tr){
-        tr.style.display = 'flex';
-        tr.style.overflowX = 'auto';
-        tr.style.gap = '8px';
-        tr.style.webkitOverflowScrolling = 'touch';
-        tr.style.gridTemplateColumns = '';
+        tr.style.cssText = 'display:flex !important;overflow-x:auto;gap:8px;padding-bottom:6px;-webkit-overflow-scrolling:touch;margin-top:14px;';
         Array.from(tr.children).forEach(c=>{
           c.style.flex = '0 0 130px';
           c.style.minWidth = '130px';
         });
       }
+      // Fix vc-top layout - force proper sizing
+      document.querySelectorAll('#vault-cards .vc-top').forEach(top=>{
+        top.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:8px;';
+      });
+      document.querySelectorAll('#vault-cards .vc-bank-badge').forEach(badge=>{
+        badge.style.cssText = 'display:flex;align-items:center;gap:4px;padding:3px 5px;border-radius:7px;border:1px solid var(--border2);background:var(--bg4);max-width:calc(100% - 46px);cursor:pointer;';
+      });
+      document.querySelectorAll('#vault-cards .vc-bank-name').forEach(name=>{
+        name.style.cssText = 'font-size:9px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:52px;';
+      });
+      document.querySelectorAll('#vault-cards .vc-bank-arrow').forEach(arr=>{
+        arr.style.display = 'none';
+      });
+      document.querySelectorAll('#vault-cards .vc-pct-badge').forEach(pct=>{
+        pct.style.cssText = 'font-size:8px;font-weight:800;flex-shrink:0;padding:3px 6px;border-radius:6px;cursor:pointer;';
+      });
+      document.querySelectorAll('#vault-cards .vc-val').forEach(val=>{
+        val.style.fontSize = '17px';
+      });
+      // Set min height on all vc cards
+      document.querySelectorAll('#vault-cards .vc').forEach(c=>{
+        c.style.minHeight = '150px';
+      });
       // Equalize vault card heights
       const cards = document.querySelectorAll('#vault-cards .vc');
       cards.forEach(c => c.style.height = '');
@@ -4890,6 +4909,7 @@ function initSupabase(){
           setTimeout(()=>{ overlay.style.display='none'; }, 600);
         }
         updateSidebarProfile();
+        localStorage.setItem('sos4_logged_in','1');
         renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
         updateCurrencySymbols();renderSingilList();computeSingilKPIs();
         checkAndStartTour();
@@ -5107,16 +5127,23 @@ function initWelcome(){
   if(!overlay)return;
 
   if(_supabase){
-    // Show app immediately if we have cached data (avoid flicker)
+    // Instant session restore — hide welcome screen immediately if user was logged in
+    const wasLoggedIn = localStorage.getItem('sos4_logged_in');
     const cached = localStorage.getItem('sos4');
-    const authKey = localStorage.getItem('salaryos-auth');
-    if(cached && authKey){
+    if(wasLoggedIn === '1' && cached){
       try{
+        // Load cached data immediately so app is usable while Supabase loads
         const parsed = JSON.parse(cached);
-        if(parsed && parsed.user){
-          overlay.style.display='none'; // Hide welcome instantly
+        if(parsed){
+          Object.assign(S, parsed);
+          overlay.style.display = 'none';
+          updateSidebarProfile();
+          renderYears();buildRows();buildVaultCards();buildExpCats();
+          buildGoals();buildBudget();buildNetWorth();buildNetWorthInputs();
+          renderExpLog();updateAllocBanner();addSparklinesHTML();compute();
+          updateCurrencySymbols();renderSingilList();computeSingilKPIs();
         }
-      }catch(e){}
+      }catch(e){ localStorage.removeItem('sos4_logged_in'); }
     }
 
     _supabase.auth.getSession().then(({data:{session}})=>{
@@ -5134,6 +5161,7 @@ function initWelcome(){
         overlay.style.display='none';
         // Always load from Supabase — this is the source of truth for Google users
         // It will overwrite whatever is in localStorage (could be from a different user)
+        localStorage.setItem('sos4_logged_in','1');
         loadFromSupabase().then(()=>{
           updateSidebarProfile();
           renderYears();buildRows();buildVaultCards();buildExpCats();buildGoals();
@@ -5144,12 +5172,39 @@ function initWelcome(){
         return;
       }
 
-      // ── NO SESSION: show login screen ──
+      // ── NO SESSION ──
+      // If user was previously logged in, try to refresh session silently
+      const _wasLoggedIn = localStorage.getItem('sos4_logged_in');
+      if(_wasLoggedIn === '1'){
+        // Session expired but user was logged in — keep app visible, sync in background
+        // The fast restore already rendered the app with cached data
+        // Just silently try to refresh session
+        _supabase.auth.refreshSession().then(({data})=>{
+          if(data?.session?.user){
+            _supabaseUser = data.session.user;
+            const meta = data.session.user.user_metadata || {};
+            _userProfile = {
+              name: meta.full_name || meta.name || data.session.user.email?.split('@')[0] || 'User',
+              avatar: (meta.full_name || meta.name || 'U')[0].toUpperCase(),
+              email: data.session.user.email,
+              type: 'google'
+            };
+            S.user = _userProfile;
+            updateSidebarProfile();
+            // Re-sync data from Supabase
+            loadFromSupabase().then(()=>{ compute(); renderSingilList(); });
+          } else {
+            // Truly expired — clear and show login next time
+            localStorage.removeItem('sos4_logged_in');
+          }
+        }).catch(()=>{ localStorage.removeItem('sos4_logged_in'); });
+        return; // Keep app visible from fast restore
+      }
       // Clear any leftover localStorage from a previous Google session
-      // so a new visitor or guest never sees another user's data
       try{
         localStorage.removeItem('sos4');
         localStorage.removeItem('sos4_uid');
+        localStorage.removeItem('sos4_logged_in');
       } catch(e){}
       // Reset in-memory state to blank
       const yr = new Date().getFullYear();
